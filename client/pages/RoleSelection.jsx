@@ -27,7 +27,7 @@ const roles = [
     color: "bg-green-50 hover:bg-green-100 border-green-200",
   },
   {
-    type: "finance",
+    type: "payroll",
     title: "Finance",
     description:
       "Handle payroll exports, reconciliation, and financial reporting",
@@ -49,7 +49,7 @@ export default function RoleSelection() {
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-extrabold text-gray-900 mb-4">
-            Welcome to LunchApp
+            Welcome to ICMeal
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
             Your comprehensive lunch subscription management platform. Choose

@@ -3,11 +3,14 @@
 // import { useAuth } from "@/contexts/AuthContext";
 // import { Button } from "@/components/ui/button";
 // import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+// import { useDispatch } from "react-redux";
+// import { setUser } from "../slice/authSlice";
 
 // export default function Login() {
 //   const { role } = useParams();
 //   const navigate = useNavigate();
 //   const { login } = useAuth(); // ✅ Get login function from context
+//   const dispatch = useDispatch();
 
 //   const [employeeCode, setEmployeeCode] = useState("");
 //   const [password, setPassword] = useState("");
@@ -33,6 +36,14 @@
 
 //       if (data.success) {
 //         localStorage.setItem("token", data.token);
+
+//         dispatch(
+//           setUser({
+//             name: data.name,
+//             role: role,
+//             code: employeeCode,
+//           }),
+//         );
 //         login(role); // ✅ This updates the context (required for ProtectedRoute)
 //         navigate(`/${role}`);
 //       } else {

@@ -3,8 +3,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar, MapPin, CreditCard, Bell } from "lucide-react";
+import { useSelector } from "react-redux";
 
 export default function EmployeeDashboard() {
+  //reading the redux state values
+  const user = useSelector((state) => state.auth.user);
+
   // Shared date values
   const today = new Date();
   const year = today.getFullYear();
@@ -70,7 +74,7 @@ export default function EmployeeDashboard() {
         {/* Welcome Section */}
         <div className="mb-8">
           <h1 className="text-3xl font-extrabold text-gray-900 mb-2">
-            Welcome back, John!
+            Welcome back, {user?.name || "John"}!
           </h1>
           <p className="text-lg text-gray-600">
             Here's your lunch subscription overview for this month.
@@ -160,9 +164,6 @@ export default function EmployeeDashboard() {
                 </div>
               </div>
               <div className="flex space-x-2">
-                <Button size="sm" variant="outline">
-                  Not Coming Today
-                </Button>
                 <Button size="sm">Mark Had Lunch</Button>
               </div>
             </CardContent>

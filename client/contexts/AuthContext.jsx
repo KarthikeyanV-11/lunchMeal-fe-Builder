@@ -7,20 +7,20 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     // Check localStorage for existing role on app start
-    const savedRole = localStorage.getItem("lunchapp_role");
-    if (savedRole && ["employee", "admin", "finance"].includes(savedRole)) {
+    const savedRole = localStorage.getItem("role");
+    if (savedRole && ["employee", "admin", "payroll"].includes(savedRole)) {
       setRole(savedRole);
     }
   }, []);
 
   const login = (userRole) => {
     setRole(userRole);
-    localStorage.setItem("lunchapp_role", userRole);
+    localStorage.setItem("role", userRole);
   };
 
   const logout = () => {
     setRole(null);
-    localStorage.removeItem("lunchapp_role");
+    localStorage.removeItem("role");
   };
 
   const isAuthenticated = role !== null;

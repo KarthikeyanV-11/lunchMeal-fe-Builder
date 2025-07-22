@@ -232,7 +232,11 @@
 //   </QueryClientProvider>
 // );
 
-// createRoot(document.getElementById("root")).render(<App />);
+// createRoot(document.getElementById("root")).render(
+//   <Provider store={store}>
+//     <App />
+//   </Provider>,
+// );
 
 import "./global.css";
 
@@ -258,6 +262,7 @@ import Unauthorized from "./pages/Unauthorized";
 import { PlaceholderPage } from "./components/shared/PlaceholderPage";
 import Login from "./pages/Login";
 import store from "./store";
+import { Provider } from "react-redux";
 
 const queryClient = new QueryClient();
 

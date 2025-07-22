@@ -1,4 +1,4 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   LogOut,
   Home,
@@ -12,6 +12,8 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
+import { useDispatch } from "react-redux";
+import { clearUser } from "../../slice/authSlice";
 
 const navigationConfig = {
   employee: [
@@ -43,10 +45,17 @@ const navigationConfig = {
 export const Navigation = () => {
   const { role, logout } = useAuth();
   const location = useLocation();
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   if (!role) return null;
 
   const links = navigationConfig[role];
+
+  function handleLogout() {
+    dispatch(clearUser());
+    navigate("/");
+  }
 
   return (
     <nav className="bg-white shadow-sm border-b border-gray-200">
@@ -88,7 +97,7 @@ export const Navigation = () => {
             <Button
               variant="ghost"
               size="sm"
-              onClick={logout}
+              onClick={handleLogout}
               className="flex items-center space-x-1"
             >
               <LogOut className="h-4 w-4" />
