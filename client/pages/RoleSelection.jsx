@@ -1,5 +1,4 @@
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -17,7 +16,6 @@ const roles = [
     description:
       "View menus, manage subscriptions, and track your lunch preferences",
     icon: Users,
-    route: "/employee",
     color: "bg-blue-50 hover:bg-blue-100 border-blue-200",
   },
   {
@@ -26,7 +24,6 @@ const roles = [
     description:
       "Manage employees, upload menus, and handle subscription administration",
     icon: Shield,
-    route: "/admin",
     color: "bg-green-50 hover:bg-green-100 border-green-200",
   },
   {
@@ -35,18 +32,15 @@ const roles = [
     description:
       "Handle payroll exports, reconciliation, and financial reporting",
     icon: DollarSign,
-    route: "/finance",
     color: "bg-purple-50 hover:bg-purple-100 border-purple-200",
   },
 ];
 
 export default function RoleSelection() {
-  const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleRoleSelect = (role, route) => {
-    login(role);
-    navigate(route);
+  const handleRoleSelect = (role) => {
+    navigate(`/login/${role}`);
   };
 
   return (
@@ -71,7 +65,7 @@ export default function RoleSelection() {
               <Card
                 key={role.type}
                 className={`transition-all duration-300 hover:shadow-xl cursor-pointer ${role.color}`}
-                onClick={() => handleRoleSelect(role.type, role.route)}
+                onClick={() => handleRoleSelect(role.type)}
               >
                 <CardHeader className="text-center pb-4">
                   <div className="flex justify-center mb-4">
@@ -91,7 +85,7 @@ export default function RoleSelection() {
                     className="w-full font-semibold py-2 px-4 rounded-lg shadow-md"
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleRoleSelect(role.type, role.route);
+                      handleRoleSelect(role.type);
                     }}
                   >
                     Login as {role.title}

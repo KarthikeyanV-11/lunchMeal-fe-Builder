@@ -5,6 +5,65 @@ import { Button } from "@/components/ui/button";
 import { Calendar, MapPin, CreditCard, Bell } from "lucide-react";
 
 export default function EmployeeDashboard() {
+  // Shared date values
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = today.getMonth();
+  const day = today.getDate();
+  const monthName = today.toLocaleString("default", { month: "long" });
+
+  // 1. Get total working days in a month
+  function getWorkingDaysInMonth(year, month) {
+    let workingDays = 0;
+    const date = new Date(year, month, 1); // month is 0-indexed
+
+    while (date.getMonth() === month) {
+      const day = date.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+      if (day >= 1 && day <= 5) {
+        workingDays++;
+      }
+      date.setDate(date.getDate() + 1);
+    }
+
+    return workingDays;
+  }
+
+  // 2. Calculate total cost
+  function calculateMonthlyCost(year, month) {
+    const workingDays = getWorkingDaysInMonth(year, month);
+
+    const companyContribution = workingDays * 65;
+    const employeeContribution = workingDays * 35;
+    const total = workingDays * 100;
+
+    return {
+      workingDays,
+      companyContribution,
+      employeeContribution,
+      total,
+    };
+  }
+
+  const costDetails = calculateMonthlyCost(year, month);
+
+  // 3. Calculate remaining working days from today
+  function getRemainingWorkingDays(year, month, startDay) {
+    let remainingWorkingDays = 0;
+    const date = new Date(year, month, startDay);
+
+    while (date.getMonth() === month) {
+      const day = date.getDay();
+      if (day >= 1 && day <= 5) {
+        remainingWorkingDays++;
+      }
+      date.setDate(date.getDate() + 1);
+    }
+
+    return remainingWorkingDays;
+  }
+
+  const remainingWorkingDays = getRemainingWorkingDays(year, month, day);
+
   return (
     <Layout>
       <div className="max-w-7xl mx-auto p-6">
@@ -30,7 +89,9 @@ export default function EmployeeDashboard() {
               </Badge>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">December 2024</div>
+              <div className="text-2xl font-bold">
+                {monthName} {year}
+              </div>
               <p className="text-xs text-muted-foreground">
                 Valid till month end
               </p>
@@ -45,9 +106,12 @@ export default function EmployeeDashboard() {
               <CreditCard className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">₹1,800</div>
+              <div className="text-2xl font-bold">₹ {costDetails.total}</div>
               <p className="text-xs text-muted-foreground">
-                Employee share: ₹900
+                Company share: ₹ {costDetails.companyContribution}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Employee share: ₹ {costDetails.employeeContribution}
               </p>
             </CardContent>
           </Card>
@@ -58,8 +122,8 @@ export default function EmployeeDashboard() {
               <MapPin className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">Bangalore</div>
-              <p className="text-xs text-muted-foreground">Office cafeteria</p>
+              <div className="text-2xl font-bold">Chennai</div>
+              <p className="text-xs text-muted-foreground">Primary Location</p>
             </CardContent>
           </Card>
 
@@ -71,7 +135,7 @@ export default function EmployeeDashboard() {
               <Calendar className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">18</div>
+              <div className="text-2xl font-bold">{remainingWorkingDays}</div>
               <p className="text-xs text-muted-foreground">Working days left</p>
             </CardContent>
           </Card>
