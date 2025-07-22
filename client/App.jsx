@@ -252,10 +252,10 @@ import { MenuProvider } from "./contexts/MenuContext";
 import RoleSelection from "./pages/RoleSelection";
 import EmployeeDashboard from "./pages/employee/Dashboard";
 import AdminDashboard from "./pages/admin/Dashboard";
-import FinanceDashboard from "./pages/finance/Dashboard";
+import PayrollDashboard from "./pages/payroll/Dashboard";
 import EmployeeCalendar from "./pages/employee/Calendar";
 import AdminCalendar from "./pages/admin/Calendar";
-import FinanceCalendar from "./pages/finance/Calendar";
+import PayrollCalendar from "./pages/payroll/Calendar";
 import MenuDisplay from "./pages/shared/MenuDisplay";
 import NotFound from "./pages/NotFound";
 import Unauthorized from "./pages/Unauthorized";
@@ -341,11 +341,11 @@ const AppRoutes = () => {
         }
       />
 
-      {/* Finance Routes (No Auth) */}
-      <Route path="/finance" element={<FinanceDashboard />} />
-      <Route path="/finance/calendar" element={<FinanceCalendar />} />
+      {/* Payroll Routes (No Auth) */}
+      <Route path="/payroll" element={<PayrollDashboard />} />
+      <Route path="/payroll/calendar" element={<PayrollCalendar />} />
       <Route
-        path="/finance/payroll"
+        path="/payroll/payroll"
         element={
           <PlaceholderPage
             title="Payroll Export"
@@ -354,7 +354,7 @@ const AppRoutes = () => {
         }
       />
       <Route
-        path="/finance/reconciliation"
+        path="/payroll/reconciliation"
         element={
           <PlaceholderPage
             title="Reconciliation"

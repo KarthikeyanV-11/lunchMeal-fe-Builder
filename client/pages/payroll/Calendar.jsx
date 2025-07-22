@@ -3,10 +3,15 @@ import { useNavigate } from "react-router-dom";
 import { Layout } from "@/components/shared/Layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Eye } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Calendar as CalendarIcon,
+  Eye,
+} from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
-export default function FinanceCalendar() {
+export default function PayrollCalendar() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const navigate = useNavigate();
   const { role } = useAuth();
@@ -16,8 +21,18 @@ export default function FinanceCalendar() {
   const currentYear = currentDate.getFullYear();
 
   const monthNames = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December"
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
   ];
 
   const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -67,9 +82,7 @@ export default function FinanceCalendar() {
 
     // Add empty cells for days before the first day of the month
     for (let i = 0; i < firstDayOfWeek; i++) {
-      days.push(
-        <div key={`empty-${i}`} className="h-12 w-12"></div>
-      );
+      days.push(<div key={`empty-${i}`} className="h-12 w-12"></div>);
     }
 
     // Add days of the month
@@ -80,13 +93,15 @@ export default function FinanceCalendar() {
 
       let dayClasses = [
         "h-12 w-12 flex items-center justify-center text-sm rounded-lg transition-all duration-200",
-        "border border-transparent cursor-pointer"
+        "border border-transparent cursor-pointer",
       ];
 
       if (isPast) {
         dayClasses.push("bg-gray-200 text-gray-400");
       } else if (isTodayDate) {
-        dayClasses.push("border-blue-500 bg-blue-50 text-blue-700 font-semibold");
+        dayClasses.push(
+          "border-blue-500 bg-blue-50 text-blue-700 font-semibold",
+        );
       } else if (isWeekendDate) {
         dayClasses.push("text-gray-400 bg-gray-50");
       } else {
@@ -101,7 +116,7 @@ export default function FinanceCalendar() {
           title="Click to view menu and financial data"
         >
           {day}
-        </div>
+        </div>,
       );
     }
 
@@ -136,7 +151,9 @@ export default function FinanceCalendar() {
 
               <CardTitle className="text-2xl font-bold text-gray-900 flex items-center space-x-2">
                 <CalendarIcon className="h-6 w-6" />
-                <span>{monthNames[currentMonth]} {currentYear}</span>
+                <span>
+                  {monthNames[currentMonth]} {currentYear}
+                </span>
               </CardTitle>
 
               <Button
@@ -190,13 +207,15 @@ export default function FinanceCalendar() {
           </CardContent>
         </Card>
 
-        {/* Finance Instructions */}
+        {/* Payroll Instructions */}
         <Card className="mt-6 bg-purple-50 border-purple-200">
           <CardContent className="pt-6">
             <div className="flex items-start space-x-3">
               <Eye className="h-5 w-5 text-purple-600 mt-0.5" />
               <div>
-                <h3 className="font-semibold text-purple-900 mb-2">Finance View Features:</h3>
+                <h3 className="font-semibold text-purple-900 mb-2">
+                  Payroll View Features:
+                </h3>
                 <ul className="text-sm text-purple-800 space-y-1">
                   <li>• View lunch menus for any date</li>
                   <li>• See employee attendance counts</li>

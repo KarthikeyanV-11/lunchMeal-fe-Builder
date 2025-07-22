@@ -93,22 +93,28 @@
 // }
 
 //temp for now
-
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { useAuth } from "../contexts/AuthContext"; // Ensure this is the correct path
 
 const Login = () => {
-  const { role } = useParams(); // Get the role from the URL
+  const { role } = useParams(); // role from the route: /login/:role
   const navigate = useNavigate();
+  const { login } = useAuth(); // use login from context
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
   const handleLogin = (e) => {
     e.preventDefault();
-    // No validation or API request
-    localStorage.setItem("role", role); // Optional: Store role
-    navigate(`/${role}`); // Redirect to /employee or /admin, etc.
+
+    // TEMP login (no actual auth check)
+    if (["employee", "admin", "payroll"].includes(role)) {
+      login(role); // Set role in context + localStorage
+      navigate(`/${role}`); // Navigate to dashboard of the role
+    } else {
+      alert("Invalid role in URL");
+    }
   };
 
   return (

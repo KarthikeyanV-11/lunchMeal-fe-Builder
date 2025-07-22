@@ -28,7 +28,7 @@ const roles = [
   },
   {
     type: "payroll",
-    title: "Finance",
+    title: "Payroll",
     description:
       "Handle payroll exports, reconciliation, and financial reporting",
     icon: DollarSign,

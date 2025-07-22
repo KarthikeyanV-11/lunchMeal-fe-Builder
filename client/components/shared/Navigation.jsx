@@ -30,12 +30,12 @@ const navigationConfig = {
     { href: "/admin/reports", label: "Reports", icon: BarChart },
     { href: "/admin/notifications", label: "Notifications", icon: Bell },
   ],
-  finance: [
-    { href: "/finance", label: "Dashboard", icon: Home },
-    { href: "/finance/calendar", label: "Calendar", icon: Calendar },
-    { href: "/finance/payroll", label: "Payroll Export", icon: DollarSign },
+  payroll: [
+    { href: "/payroll", label: "Dashboard", icon: Home },
+    { href: "/payroll/calendar", label: "Calendar", icon: Calendar },
+    { href: "/payroll/payroll", label: "Payroll Export", icon: DollarSign },
     {
-      href: "/finance/reconciliation",
+      href: "/payroll/reconciliation",
       label: "Reconciliation",
       icon: FileText,
     },

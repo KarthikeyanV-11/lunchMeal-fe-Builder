@@ -4,14 +4,14 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DollarSign, Download, CheckCircle, AlertCircle } from "lucide-react";
 
-export default function FinanceDashboard() {
+export default function PayrollDashboard() {
   return (
     <Layout>
       <div className="max-w-7xl mx-auto p-6">
         {/* Welcome Section */}
         <div className="mb-8">
           <h1 className="text-3xl font-extrabold text-gray-900 mb-2">
-            Finance Dashboard
+            Payroll Dashboard
           </h1>
           <p className="text-lg text-gray-600">
             Manage payroll exports and financial reconciliation.
