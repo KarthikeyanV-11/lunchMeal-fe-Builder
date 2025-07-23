@@ -46,11 +46,20 @@ export default function MenuDisplay() {
   attendanceDeadline.setDate(attendanceDeadline.getDate() - 1);
   const canMarkAttendance = today <= attendanceDeadline && !isPastDate;
 
+  // useEffect(() => {
+  //   // Load menu for the selected date
+  //   const menu = getMenuForDate(selectedDate);
+  //   setMenuItems(menu || []);
+  // }, [selectedDate, getMenuForDate]);
+  const { fetchMenuForDate, loading } = useMenu();
+
   useEffect(() => {
-    // Load menu for the selected date
-    const menu = getMenuForDate(selectedDate);
-    setMenuItems(menu || []);
-  }, [selectedDate, getMenuForDate]);
+    async function loadMenu() {
+      const menu = await fetchMenuForDate(selectedDate);
+      setMenuItems(menu || []);
+    }
+    loadMenu();
+  }, [selectedDate, fetchMenuForDate]);
 
   const handleAttendanceChange = (willAttend) => {
     if (!canMarkAttendance) {

@@ -4,12 +4,41 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar, MapPin, CreditCard, Bell } from "lucide-react";
 import { useSelector } from "react-redux";
+import { useEffect, useState } from "react";
+import axios from "axios";
 
 export default function EmployeeDashboard() {
   //reading the redux state values
   const user = useSelector((state) => state.auth.user);
 
-  // Shared date values
+  //for getting the subscription status from the backend
+  const [isActive, setIsActive] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchSubscription = async () => {
+      try {
+        const token = localStorage.getItem("authToken"); // or from context
+
+        const res = await axios.get("/api/subscription", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        // Access the `active` field from the response
+        setIsActive(res.data.active);
+      } catch (err) {
+        console.error("Error fetching subscription status", err);
+        setIsActive(false); // fallback to not active
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchSubscription();
+  }, []);
+
+  // Shared date values for days part
   const today = new Date();
   const year = today.getFullYear();
   const month = today.getMonth();
@@ -88,9 +117,23 @@ export default function EmployeeDashboard() {
               <CardTitle className="text-sm font-medium">
                 Subscription Status
               </CardTitle>
-              <Badge variant="default" className="bg-green-100 text-green-800">
-                Active
-              </Badge>
+
+              {loading ? (
+                <Badge variant="outline" className="text-gray-600">
+                  Loading...
+                </Badge>
+              ) : (
+                <Badge
+                  variant="default"
+                  className={
+                    isActive
+                      ? "bg-green-100 text-green-800"
+                      : "bg-red-100 text-red-800"
+                  }
+                >
+                  {isActive ? "Active" : "Not Active"}
+                </Badge>
+              )}
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
@@ -114,7 +157,7 @@ export default function EmployeeDashboard() {
               <p className="text-xs text-muted-foreground">
                 Company share: ₹ {costDetails.companyContribution}
               </p>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-muted-foreground font-bold">
                 Employee share: ₹ {costDetails.employeeContribution}
               </p>
             </CardContent>

@@ -25,7 +25,7 @@ export default function PayrollDashboard() {
               <CardTitle className="text-sm font-medium">
                 Monthly Revenue
               </CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
+              {/* <DollarSign className="h-4 w-4 text-muted-foreground" /> */}₹
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">₹2,80,800</div>
@@ -40,7 +40,7 @@ export default function PayrollDashboard() {
               <CardTitle className="text-sm font-medium">
                 Employee Share
               </CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
+              {/* <DollarSign className="h-4 w-4 text-muted-foreground" /> */}₹
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">₹1,40,400</div>
@@ -53,7 +53,7 @@ export default function PayrollDashboard() {
               <CardTitle className="text-sm font-medium">
                 Company Share
               </CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
+              {/* <DollarSign className="h-4 w-4 text-muted-foreground" /> */}₹
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">₹1,40,400</div>
