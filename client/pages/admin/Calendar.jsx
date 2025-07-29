@@ -5,19 +5,29 @@
 //   Lock,
 //   Edit3,
 //   CalendarDays,
+//   Vegan,
 // } from "lucide-react";
-// import { Layout } from "@/components/shared/Layout"; // ✅ Using your real layout
-// import { useAuth } from "@/contexts/AuthContext"; // ✅ Use actual auth context
+// import { Layout } from "@/components/shared/Layout";
+// import { useAuth } from "@/contexts/AuthContext";
 // import { Button } from "@/components/ui/button";
-// import Modal from "../../components/ui/Modal";
+// import WeekMenuModal from "../../components/ui/WeekMenuModal"; // Corrected import path/name
+// import CreateTemplateModal from "../../components/ui/CreateTemplateModal"; // Renamed and imported the 'Modal' component for creating templates
 // import { useNavigate } from "react-router-dom";
+// import { useSelector } from "react-redux";
+// import { RefreshCw } from "lucide-react";
 
 // export default function AdminWeekViewCalendar() {
 //   const [weeks, setWeeks] = useState([]);
 //   const [currentDate, setCurrentDate] = useState(new Date());
-//   const [isModalOpen, setIsModalOpen] = useState(false);
-//   const [selectedWeekData, setSelectedWeekData] = useState(null);
 
+//   // State for the Weekly Menu Assignment Modal
+//   const [isWeekMenuModalOpen, setIsWeekMenuModalOpen] = useState(false);
+//   // State for the Create New Template Modal
+//   const [isCreateTemplateModalOpen, setIsCreateTemplateModalOpen] =
+//     useState(false);
+
+//   // New state to hold data for the selected week to be passed to the WeekMenuModal
+//   const [selectedWeekData, setSelectedWeekData] = useState(null);
 //   const navigate = useNavigate();
 
 //   const { role } = useAuth();
@@ -55,7 +65,6 @@
 //           range: rangeLabel,
 //           dates: weekDates,
 //           assignedMenus: {
-//             // Initializing assignedMenus
 //             monday: null,
 //             tuesday: null,
 //             wednesday: null,
@@ -82,15 +91,18 @@
 //     ).padStart(2, "0")}`;
 //   };
 
-//   const isWeekEditable = (mondayDate) => {
+//   const isWeekEditable = (weekDates) => {
+//     if (!Array.isArray(weekDates)) return false;
+
 //     const today = new Date();
-//     today.setHours(0, 0, 0, 0); // Normalize today to start of day
+//     today.setHours(0, 0, 0, 0); // Normalize time
 
-//     const sundayBefore = new Date(mondayDate);
-//     sundayBefore.setDate(mondayDate.getDate() - 1);
-//     sundayBefore.setHours(23, 59, 59, 999); // Normalize Sunday to end of day
-
-//     return today < sundayBefore;
+//     // Week is editable ONLY IF all dates are after today
+//     return weekDates.every((d) => {
+//       const date = new Date(d);
+//       date.setHours(0, 0, 0, 0);
+//       return date > today;
+//     });
 //   };
 
 //   const goToPreviousMonth = () => {
@@ -112,12 +124,49 @@
 
 //   const dayLabels = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 
-//   const menuTemplates = [
-//     { id: 1, name: "Veg Menu", emoji: "🥗" },
-//     { id: 2, name: "Non-Veg Menu", emoji: "🍗" },
-//     { id: 3, name: "South Indian", emoji: "🍛" },
-//     { id: 4, name: "North Indian", emoji: "🍲" },
-//   ];
+//   // This list would ideally come from an API or a global state
+//   const menuTemplates = useSelector((state) => state.menu.availableTemplates);
+//   console.log(menuTemplates);
+
+//   const handleWeekClick = (week) => {
+//     const editable = isWeekEditable(week.dates);
+
+//     if (editable) {
+//       setSelectedWeekData(week);
+//       setIsWeekMenuModalOpen(true);
+//     } else {
+//       alert("This week's menu is locked and cannot be modified.");
+//     }
+//   };
+
+//   // Function to handle saving assignments from the WeekMenuModal (to be passed to modal)
+//   const handleSaveWeekAssignment = (weekToUpdate, assignments) => {
+//     console.log(
+//       "Saving assignments for week:",
+//       weekToUpdate.range,
+//       assignments,
+//     );
+
+//     setWeeks((prevWeeks) =>
+//       prevWeeks.map((week) =>
+//         week.range === weekToUpdate.range
+//           ? { ...week, assignedMenus: assignments }
+//           : week,
+//       ),
+//     );
+
+//     setIsWeekMenuModalOpen(false); // Close the correct modal after saving
+//     setSelectedWeekData(null); // Clear selected data
+//   };
+
+//   // Function to handle creating a new template (placeholder for now)
+//   const handleCreateNewTemplate = (templateData) => {
+//     console.log("Creating new template:", templateData);
+//     // Here you would typically send templateData to your backend API
+//     // Then, you might update your local menuTemplates state or refetch them
+//     // For now, let's just close the modal
+//     setIsCreateTemplateModalOpen(false);
+//   };
 
 //   return (
 //     <Layout>
@@ -125,7 +174,7 @@
 //         {/* Header with Month Navigation */}
 //         <div className="flex items-center justify-between mb-6">
 //           <div className="flex items-center gap-3">
-//             <div className="w-6 h-6  rounded flex items-center justify-center">
+//             <div className="w-6 h-6 rounded flex items-center justify-center">
 //               <div>
 //                 <CalendarDays />
 //               </div>
@@ -171,25 +220,37 @@
 //           {weeks.map((week, index) => {
 //             const monday = week.dates[1];
 //             const editable = isWeekEditable(monday);
-
 //             return (
 //               <div
 //                 key={index}
-//                 className="grid grid-cols-6 border-b border-gray-200 last:border-b-0 hover:bg-gray-50 cursor-pointer"
-//                 onClick={() => {
-//                   const formatted = formatRouteDate(monday);
-//                   navigate(`/menu/${role}/${formatted}`); // Corrected line
-//                 }}
+//                 className={`grid grid-cols-6 border-b border-gray-200 last:border-b-0`}
 //               >
-//                 <div className="p-4 border-r border-gray-200 flex flex-col">
+//                 {/* Week Label Column with onClick for WeekMenuModal */}
+//                 <div
+//                   className={`p-4 border-r border-gray-200 flex flex-col cursor-pointer ${
+//                     isWeekEditable(week.dates)
+//                       ? "hover:bg-gray-50"
+//                       : "opacity-70"
+//                   }`}
+//                   onClick={() => {
+//                     if (isWeekEditable(week.dates)) {
+//                       setSelectedWeekData(week);
+//                       setIsWeekMenuModalOpen(true);
+//                     } else {
+//                       alert(
+//                         "This week's menu is locked and cannot be modified.",
+//                       );
+//                     }
+//                   }}
+//                 >
 //                   <div className="font-medium text-gray-800 mb-2">
 //                     {week.range}
 //                   </div>
 //                   <div className="flex items-center gap-2">
-//                     {editable ? (
+//                     {isWeekEditable(week.dates) ? (
 //                       <>
-//                         <Edit3 className="w-4 h-4 text-blue-500" />
-//                         <span className="text-sm text-blue-600 font-medium">
+//                         <Edit3 className="w-4 h-4 text-green-500" />
+//                         <span className="text-sm text-green-600 font-medium">
 //                           Editable
 //                         </span>
 //                       </>
@@ -204,24 +265,42 @@
 //                   </div>
 //                 </div>
 
-//                 {week.dates.slice(1, 6).map((date, idx) => (
-//                   <div
-//                     key={idx}
-//                     className="p-4 border-r border-gray-200 last:border-r-0 text-center"
-//                   >
-//                     <div className="flex flex-col items-center gap-2">
-//                       <div className="w-8 h-8 bg-gray-100 rounded flex items-center justify-center">
-//                         <div className="text-gray-400 text-lg">🍽</div>
+//                 {/* Day Columns (Mon–Fri) */}
+//                 {week.dates.slice(1, 6).map((date, idx) => {
+//                   const dayKey = dayLabels[idx]?.toLowerCase(); // e.g., 'monday'
+//                   const assignedMenu = week.assignedMenus[dayKey];
+//                   const formattedDate = formatRouteDate(date);
+
+//                   return (
+//                     <div
+//                       key={idx}
+//                       className="p-4 border-r border-gray-200 last:border-r-0 text-center hover:bg-gray-50 cursor-pointer"
+//                       onClick={(e) => {
+//                         e.stopPropagation(); // Prevent parent row click
+//                         // navigate(`/menu/${formattedDate}`); // Navigate to display page
+//                         navigate(`/menu/${role}/${formattedDate}`);
+//                       }}
+//                     >
+//                       <div className="flex flex-col items-center gap-2">
+//                         <div className="w-8 h-8 bg-gray-100 rounded flex items-center justify-center">
+//                           <div className="text-gray-400 text-lg">🍽</div>
+//                         </div>
+//                         <span className="text-sm text-gray-500">
+//                           {assignedMenu ? assignedMenu.name : "Not assigned"}
+//                         </span>
 //                       </div>
-//                       <span className="text-sm text-gray-500">
-//                         Not assigned
-//                       </span>
 //                     </div>
-//                   </div>
-//                 ))}
+//                   );
+//                 })}
 //               </div>
 //             );
 //           })}
+//         </div>
+
+//         <div className="flex justify-center items-center">
+//           <Button className="mt-4 flex gap-2 justify-center items-center">
+//             <RefreshCw className="w-4" /> <span>Sync</span>
+//           </Button>
 //         </div>
 
 //         {/* Access Policy */}
@@ -238,7 +317,7 @@
 //           <p className="mt-2">
 //             <span className="text-green-600 font-semibold">
 //               Green "Editable"
-//             </span>
+//             </span>{" "}
 //             : Week can still be assigned/modified
 //           </p>
 //           <p>
@@ -247,52 +326,121 @@
 //           </p>
 //         </div>
 
-//         {/* Menu Templates */}
+//         {/* Menu Templates Section */}
 //         <div className="mt-10 border rounded-xl p-4 shadow-sm hover:shadow-md transition">
 //           <div className="flex justify-between">
 //             <h2 className="text-xl font-semibold mb-4">
 //               🍚 Available Menu Templates
 //             </h2>
-//             <Button size="sm" onClick={() => setIsModalOpen(true)}>
+//             <Button
+//               size="sm"
+//               onClick={() => setIsCreateTemplateModalOpen(true)}
+//             >
 //               + New Template
 //             </Button>
 //           </div>
-//           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+//           <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
 //             {menuTemplates.map((template) => (
 //               <div
 //                 key={template.id}
-//                 onClick={() => navigate(`/menu`)}
-//                 className="cursor-pointer border rounded-xl p-4 shadow-sm hover:shadow-md transition"
+//                 className="bg-white rounded-lg p-4 border border-gray-200
+//         hover:shadow-md transition-shadow duration-200 ease-in-out
+//         flex flex-col text-gray-800 overflow-hidden"
 //               >
-//                 <div className="text-3xl">{template.emoji}</div>
-//                 <div className="mt-2 font-medium">{template.name}</div>
+//                 {/* Top Section: Name and Emoji */}
+//                 <div className="flex items-center justify-between mb-3">
+//                   <h3 className="text-xl font-semibold flex-grow pr-2 break-words">
+//                     {template.name}
+//                   </h3>
+//                   {template.emoji && (
+//                     <div
+//                       className="text-2xl"
+//                       role="img"
+//                       aria-label={template.name}
+//                     >
+//                       {template.emoji}
+//                     </div>
+//                   )}
+//                 </div>
+
+//                 {/* Description (Clamp to 3 lines with ellipsis) */}
+//                 {template.description && (
+//                   <p className="text-lg text-gray-600 mb-3 line-clamp-3 break-words">
+//                     {template.description}
+//                   </p>
+//                 )}
+
+//                 {/* Type Badge */}
+//                 <div className="flex justify-start">
+//                   <p className="bg-gray-100 text-gray-700 text-xs font-medium px-2.5 py-0.5 rounded mb-3">
+//                     {template.type}
+//                   </p>
+//                 </div>
+
+//                 {/* Items (wrapped & scrollable if too many items) */}
+//                 <div className="max-h-20 overflow-auto mb-3">
+//                   <p className="text-gray-700 text-base font-medium break-words whitespace-pre-wrap">
+//                     Items: {template.items.join(", ")}
+//                   </p>
+//                 </div>
 //               </div>
 //             ))}
+//             {/* Message for no templates */}
+//             {menuTemplates.length === 0 && (
+//               <p className="col-span-full text-center text-gray-500 italic py-8">
+//                 No menu templates available. Click "+ New Template" to create
+//                 one!
+//               </p>
+//             )}
 //           </div>
 //         </div>
-//         {/*modal window*/}
-//         {isModalOpen && (
-//           <Modal isModalOpen={isModalOpen} setIsModalOpen={setIsModalOpen} />
+
+//         {/* Modals */}
+//         {/* Week Menu Assignment Modal */}
+//         {isWeekMenuModalOpen && selectedWeekData && (
+//           <WeekMenuModal
+//             isModalOpen={isWeekMenuModalOpen} // Use the correct state variable
+//             setIsModalOpen={setIsWeekMenuModalOpen} // Use the correct setter
+//             weekData={selectedWeekData}
+//             menuTemplates={menuTemplates}
+//             onSave={handleSaveWeekAssignment}
+//           />
+//         )}
+
+//         {/* Create New Template Modal */}
+//         {isCreateTemplateModalOpen && (
+//           <CreateTemplateModal
+//             isOpen={isCreateTemplateModalOpen} // Pass the state to the modal
+//             setIsOpen={setIsCreateTemplateModalOpen} // Pass the setter to the modal
+//             onSaveTemplate={handleCreateNewTemplate} // Pass a handler for saving new templates
+//           />
 //         )}
 //       </div>
 //     </Layout>
 //   );
 // }
 
-import { useState, useEffect } from "react";
+// src/components/ui/AdminWeekViewCalendar.jsx ----> updated
+import React, { useState, useEffect } from "react";
 import {
   ChevronLeft,
   ChevronRight,
   Lock,
   Edit3,
   CalendarDays,
+  Vegan,
+  UtensilsCrossed,
+  Salad,
+  Ham,
 } from "lucide-react";
 import { Layout } from "@/components/shared/Layout";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import WeekMenuModal from "../../components/ui/WeekMenuModal"; // Corrected import path/name
-import CreateTemplateModal from "../../components/ui/CreateTemplateModal"; // Renamed and imported the 'Modal' component for creating templates
+import WeekMenuModal from "../../components/ui/WeekMenuModal";
+import CreateTemplateModal from "../../components/ui/CreateTemplateModal";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { RefreshCw } from "lucide-react";
 
 export default function AdminWeekViewCalendar() {
   const [weeks, setWeeks] = useState([]);
@@ -319,6 +467,7 @@ export default function AdminWeekViewCalendar() {
         currentDate.getMonth(),
         1,
       );
+
       const currentSunday = new Date(firstDayOfMonth);
       currentSunday.setDate(
         firstDayOfMonth.getDate() - firstDayOfMonth.getDay(),
@@ -339,6 +488,15 @@ export default function AdminWeekViewCalendar() {
         const friday = weekDates[5];
         const rangeLabel = `${formatDisplayDate(monday)} - ${formatDisplayDate(friday)}`;
 
+        // Calculate individual day editability for the modal
+        const dayEditability = {
+          monday: isDayEditable(weekDates[1]),
+          tuesday: isDayEditable(weekDates[2]),
+          wednesday: isDayEditable(weekDates[3]),
+          thursday: isDayEditable(weekDates[4]),
+          friday: isDayEditable(weekDates[5]),
+        };
+
         result.push({
           range: rangeLabel,
           dates: weekDates,
@@ -349,6 +507,8 @@ export default function AdminWeekViewCalendar() {
             thursday: null,
             friday: null,
           },
+          // IMPORTANT: Add the isDayEditable map here
+          isDayEditable: dayEditability,
         });
       }
 
@@ -369,15 +529,44 @@ export default function AdminWeekViewCalendar() {
     ).padStart(2, "0")}`;
   };
 
-  const isWeekEditable = (mondayDate) => {
+  // --- NEW isDayEditable FUNCTION (from your provided code) ---
+  const isDayEditable = (dateToCheck) => {
     const today = new Date();
-    today.setHours(0, 0, 0, 0); // Normalize today to start of day
+    today.setHours(0, 0, 0, 0); // Normalize today's date to start of day
 
-    const sundayBefore = new Date(mondayDate);
-    sundayBefore.setDate(mondayDate.getDate() - 1); // Get the Sunday before Monday
-    sundayBefore.setHours(23, 59, 59, 999); // Normalize Sunday to end of day
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1);
+    tomorrow.setHours(0, 0, 0, 0); // Normalize tomorrow's date
 
-    return today < sundayBefore;
+    const checkedDate = new Date(dateToCheck);
+    checkedDate.setHours(0, 0, 0, 0); // Normalize the date being checked
+
+    // Rule 1: Today and past days are not editable
+    if (checkedDate <= today) {
+      return false;
+    }
+
+    // Rule 2: Tomorrow is editable
+    if (checkedDate.getTime() === tomorrow.getTime()) {
+      return true;
+    }
+
+    // Rule 3: Next days or weeks are editable
+    if (checkedDate > tomorrow) {
+      return true;
+    }
+
+    return false;
+  };
+
+  // --- MODIFIED isWeekRangeEditable FUNCTION (for modal trigger) ---
+  const isWeekRangeEditable = (weekDates) => {
+    if (!Array.isArray(weekDates) || weekDates.length === 0) return false;
+
+    // A week is editable if at least one day in it (Monday to Friday)
+    // is editable according to the new `isDayEditable` logic.
+    // We only care about Monday to Friday for menu assignments.
+    return weekDates.slice(1, 6).some((date) => isDayEditable(date));
   };
 
   const goToPreviousMonth = () => {
@@ -400,22 +589,21 @@ export default function AdminWeekViewCalendar() {
   const dayLabels = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 
   // This list would ideally come from an API or a global state
-  const menuTemplates = [
-    { id: 1, name: "Veg Menu", emoji: "🥗" },
-    { id: 2, name: "Non-Veg Menu", emoji: "🍗" },
-    { id: 3, name: "South Indian", emoji: "🍛" },
-    { id: 4, name: "North Indian", emoji: "🍲" },
-  ];
+  const [menuTemplates] = useSelector((state) => state.menu.availableTemplates);
+  console.log(menuTemplates);
 
   const handleWeekClick = (week) => {
-    const monday = week.dates[1];
-    const editable = isWeekEditable(monday);
+    // We now check if the week has *any* editable days to open the modal
+    const editable = isWeekRangeEditable(week.dates);
 
     if (editable) {
-      setSelectedWeekData(week); // Set the entire week object
-      setIsWeekMenuModalOpen(true); // Open the correct modal
+      setSelectedWeekData(week);
+      setIsWeekMenuModalOpen(true);
     } else {
-      alert("This week's menu is locked and cannot be modified.");
+      // Replaced alert with a console.log, as per instructions to avoid alert()
+      console.log("This week has no editable days for menu assignment.");
+      // You might want to implement a custom message box here instead of console.log
+      // For example: show a temporary notification or a custom modal.
     }
   };
 
@@ -498,21 +686,34 @@ export default function AdminWeekViewCalendar() {
             ))}
           </div>
           {weeks.map((week, index) => {
-            const monday = week.dates[1];
-            const editable = isWeekEditable(monday);
-
+            const isAnyDayEditableInWeek = isWeekRangeEditable(week.dates); // Use this for overall week lock
             return (
               <div
                 key={index}
-                className={`grid grid-cols-6 border-b border-gray-200 last:border-b-0 ${editable ? "hover:bg-gray-50 cursor-pointer" : "opacity-70"}`}
-                onClick={() => handleWeekClick(week)} // Use the new handler
+                className={`grid grid-cols-6 border-b border-gray-200 last:border-b-0`}
               >
-                <div className="p-4 border-r border-gray-200 flex flex-col">
+                {/* Week Label Column with onClick for WeekMenuModal */}
+                <div
+                  className={`p-4 border-r border-gray-200 flex flex-col cursor-pointer ${
+                    isAnyDayEditableInWeek ? "hover:bg-gray-50" : "opacity-70"
+                  }`}
+                  onClick={() => {
+                    if (isAnyDayEditableInWeek) {
+                      setSelectedWeekData(week);
+                      setIsWeekMenuModalOpen(true);
+                    } else {
+                      // Replaced alert with console.log
+                      console.log(
+                        "This week has no editable days for menu assignment.",
+                      );
+                    }
+                  }}
+                >
                   <div className="font-medium text-gray-800 mb-2">
                     {week.range}
                   </div>
                   <div className="flex items-center gap-2">
-                    {editable ? (
+                    {isAnyDayEditableInWeek ? (
                       <>
                         <Edit3 className="w-4 h-4 text-green-500" />
                         <span className="text-sm text-green-600 font-medium">
@@ -530,21 +731,48 @@ export default function AdminWeekViewCalendar() {
                   </div>
                 </div>
 
+                {/* Day Columns (Mon–Fri) */}
                 {week.dates.slice(1, 6).map((date, idx) => {
                   const dayKey = dayLabels[idx]?.toLowerCase(); // e.g., 'monday'
                   const assignedMenu = week.assignedMenus[dayKey];
+                  const formattedDate = formatRouteDate(date);
+                  const editableDay = isDayEditable(date); // Check individual day's editability
+
                   return (
                     <div
                       key={idx}
-                      className="p-4 border-r border-gray-200 last:border-r-0 text-center"
+                      className={`p-4 border-r border-gray-200 last:border-r-0 text-center hover:bg-gray-50 cursor-pointer ${
+                        !editableDay ? "opacity-70" : "" // Dim if not editable
+                      }`}
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevent parent row click
+                        // We still allow navigation to view past menus, just not editing
+                        navigate(`/menu/${role}/${formattedDate}`);
+                      }}
                     >
                       <div className="flex flex-col items-center gap-2">
                         <div className="w-8 h-8 bg-gray-100 rounded flex items-center justify-center">
-                          <div className="text-gray-400 text-lg">🍽</div>
+                          <div className="text-gray-400 text-lg">
+                            <UtensilsCrossed />
+                          </div>
                         </div>
-                        <span className="text-sm text-gray-500">
-                          {assignedMenu ? assignedMenu.name : "Not assigned"}
+                        <span className="text-sm text-gray-500 mb-1">
+                          {assignedMenu
+                            ? assignedMenu.menuName
+                            : "Not assigned"}
                         </span>
+
+                        {/* Show lock/edit icon for individual days */}
+                        <div className="flex items-center gap-1">
+                          {editableDay ? (
+                            <Edit3 className="w-3 h-3 text-green-500" />
+                          ) : (
+                            <Lock className="w-3 h-3 text-gray-400" />
+                          )}
+                          <span className="text-xs text-gray-500">
+                            {editableDay ? "Editable" : "Locked"}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   );
@@ -554,26 +782,38 @@ export default function AdminWeekViewCalendar() {
           })}
         </div>
 
+        <div className="flex justify-center items-center">
+          <Button className="mt-4 flex gap-2 justify-center items-center">
+            <RefreshCw className="w-4" /> <span>Sync</span>
+          </Button>
+        </div>
+
         {/* Access Policy */}
         <div className="bg-orange-200 text-gray-900 p-4 rounded-md mt-6 text-sm">
           <h2 className="font-semibold mb-1">Access Control Policy</h2>
           <p>
-            Menu assignments for each week must be made before the Sunday
-            preceding that week.
+            Menu assignments for **today and past days or weeks** are locked and
+            cannot be modified.
           </p>
           <p>
-            Once a week starts (Monday), the menu becomes locked and cannot be
-            modified.
+            **Tomorrow** can be editable if it falls on a weekday within the
+            current week.
           </p>
+          <p>All days in **future weeks** are editable.</p>
           <p className="mt-2">
             <span className="text-green-600 font-semibold">
               Green "Editable"
             </span>{" "}
-            : Week can still be assigned/modified
+            : Day can be assigned/modified
           </p>
           <p>
             <span className="text-gray-500 font-semibold">Gray "Locked"</span>:
-            Assignment window has closed
+            Assignment window has closed for this day
+          </p>
+          <p className="mt-2 text-sm font-medium">
+            **Note**: Clicking a week (the leftmost column) will open the
+            assignment modal only if there is at least one editable day within
+            that week.
           </p>
         </div>
 
@@ -581,7 +821,7 @@ export default function AdminWeekViewCalendar() {
         <div className="mt-10 border rounded-xl p-4 shadow-sm hover:shadow-md transition">
           <div className="flex justify-between">
             <h2 className="text-xl font-semibold mb-4">
-              🍚 Available Menu Templates
+              Available Menu Templates
             </h2>
             <Button
               size="sm"
@@ -590,17 +830,54 @@ export default function AdminWeekViewCalendar() {
               + New Template
             </Button>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-            {menuTemplates.map((template) => (
-              <div
-                key={template.id}
-                onClick={() => navigate(`/menu/${template.id}`)} // Example: navigate to a template detail page
-                className="cursor-pointer border rounded-xl p-4 shadow-sm hover:shadow-md transition"
-              >
-                <div className="text-3xl">{template.emoji}</div>
-                <div className="mt-2 font-medium">{template.name}</div>
-              </div>
-            ))}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
+            {menuTemplates?.map((template) => {
+              console.log(template.id);
+
+              return (
+                <div
+                  key={template.id}
+                  className="bg-white rounded-lg p-4 border border-gray-200
+    hover:shadow-md transition-shadow duration-200 ease-in-out
+    flex flex-col text-gray-800 overflow-hidden"
+                >
+                  {/* Top Section: Name and Emoji */}
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-xl font-semibold flex-grow pr-2 break-words">
+                      {template.menuName}
+                    </h3>
+                    {template.emoji && (
+                      <div
+                        className="text-2xl"
+                        role="img"
+                        aria-label={template.menuName}
+                      >
+                        {template.menuType === "VEG" && (
+                          <Salad stroke="green" />
+                        )}
+                        {template.menuType === "NON_VEG" && (
+                          <Ham stroke="red" />
+                        )}
+                        {template.menuType === "BOTH" && (
+                          <UtensilsCrossed stroke="orange" />
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Optional Description */}
+                  <p className="text-sm text-gray-600 mb-2">
+                    {template.description}
+                  </p>
+
+                  {/* Menu Items */}
+                  <p className="text-sm">
+                    <span className="font-medium">Items:</span>{" "}
+                    {template.menuItems}
+                  </p>
+                </div>
+              );
+            })}
           </div>
         </div>
 
@@ -608,20 +885,21 @@ export default function AdminWeekViewCalendar() {
         {/* Week Menu Assignment Modal */}
         {isWeekMenuModalOpen && selectedWeekData && (
           <WeekMenuModal
-            isModalOpen={isWeekMenuModalOpen} // Use the correct state variable
-            setIsModalOpen={setIsWeekMenuModalOpen} // Use the correct setter
+            isModalOpen={isWeekMenuModalOpen}
+            setIsModalOpen={setIsWeekMenuModalOpen}
             weekData={selectedWeekData}
             menuTemplates={menuTemplates}
             onSave={handleSaveWeekAssignment}
+            // The isDayEditable prop is no longer needed here as the modal will use weekData.isDayEditable
           />
         )}
 
         {/* Create New Template Modal */}
         {isCreateTemplateModalOpen && (
           <CreateTemplateModal
-            isOpen={isCreateTemplateModalOpen} // Pass the state to the modal
-            setIsOpen={setIsCreateTemplateModalOpen} // Pass the setter to the modal
-            onSaveTemplate={handleCreateNewTemplate} // Pass a handler for saving new templates
+            isOpen={isCreateTemplateModalOpen}
+            setIsOpen={setIsCreateTemplateModalOpen}
+            onSaveTemplate={handleCreateNewTemplate}
           />
         )}
       </div>

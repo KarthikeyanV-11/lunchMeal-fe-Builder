@@ -1,8 +1,7 @@
 // import "./global.css";
 
-// import { Toaster } from "@/components/ui/toaster";
+// import { Toaster } from "react-hot-toast"; // ✅ correct one for react-hot-toast
 // import { createRoot } from "react-dom/client";
-// import { Toaster as Sonner } from "@/components/ui/sonner";
 // import { TooltipProvider } from "@/components/ui/tooltip";
 // import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 // import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
@@ -226,6 +225,7 @@
 //           <BrowserRouter>
 //             <AppRoutes />
 //           </BrowserRouter>
+//  <Toaster position="top-right" reverseOrder={false} />{" "}
 //         </MenuProvider>
 //       </AuthProvider>
 //     </TooltipProvider>
@@ -240,9 +240,8 @@
 
 import "./global.css";
 
-import { Toaster } from "@/components/ui/toaster";
+import { Toaster } from "react-hot-toast"; // ✅ correct one for react-hot-toast
 import { createRoot } from "react-dom/client";
-import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
@@ -380,11 +379,21 @@ const App = () => (
     <TooltipProvider>
       <AuthProvider>
         <MenuProvider>
-          <Toaster />
-          <Sonner />
           <BrowserRouter>
             <AppRoutes />
           </BrowserRouter>
+          <Toaster
+            position="top-right"
+            toastOptions={{
+              duration: 2000,
+              style: {
+                marginTop: "50px",
+                background: "#333",
+                color: "#fff",
+              },
+            }}
+          />{" "}
+          {/* ✅ place here */}
         </MenuProvider>
       </AuthProvider>
     </TooltipProvider>

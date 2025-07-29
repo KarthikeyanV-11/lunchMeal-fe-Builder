@@ -8,13 +8,11 @@ import {
   ArrowLeft,
   CheckCircle,
   XCircle,
-  Edit,
-  Plus,
-  Trash2,
   Users,
   DollarSign,
   Calendar,
   Clock,
+  Trash2,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useMenu } from "@/contexts/MenuContext";
@@ -24,39 +22,45 @@ export default function MenuDisplay() {
   const { role, selectedDate } = useParams();
   const navigate = useNavigate();
   const { role: userRole } = useAuth();
-  const { getMenuForDate } = useMenu();
+  const { fetchMenuForDate, loading } = useMenu(); // getting the functionalities from the menuContext
 
   const [attendanceStatus, setAttendanceStatus] = useState(null);
   const [menuItems, setMenuItems] = useState([]);
-  const [isEditing, setIsEditing] = useState(false);
-  const [newItem, setNewItem] = useState("");
 
-  // Parse the date
   const date = new Date(selectedDate);
-  const formattedDate = date.toLocaleDateString("en-GB"); // DD/MM/YYYY format
+  const formattedDate = date.toLocaleDateString("en-GB");
   const today = new Date();
 
-  // Check if date is valid and not a weekend
   const isWeekend = date.getDay() === 0 || date.getDay() === 6;
   const isPastDate = date < today.setHours(0, 0, 0, 0);
   const isToday = date.toDateString() === today.toDateString();
 
-  // Check attendance window (1 day before)
   const attendanceDeadline = new Date(date);
   attendanceDeadline.setDate(attendanceDeadline.getDate() - 1);
   const canMarkAttendance = today <= attendanceDeadline && !isPastDate;
 
-  // useEffect(() => {
-  //   // Load menu for the selected date
-  //   const menu = getMenuForDate(selectedDate);
-  //   setMenuItems(menu || []);
-  // }, [selectedDate, getMenuForDate]);
-  const { fetchMenuForDate, loading } = useMenu();
+  /*helper function*/
+  const getDayKey = (dateStr) => {
+    const dayName = new Date(dateStr)
+      .toLocaleDateString("en-US", {
+        weekday: "long",
+      })
+      .toLowerCase();
+    return dayName; // e.g., "friday"
+  };
 
   useEffect(() => {
     async function loadMenu() {
-      const menu = await fetchMenuForDate(selectedDate);
-      setMenuItems(menu || []);
+      // const menu = await fetchMenuForDate(selectedDate);/
+      // setMenuItems(menu || []);
+      const week = await fetchMenuForDate(selectedDate); // fetches entire week
+      if (week) {
+        const dayKey = getDayKey(selectedDate); // e.g., "friday"
+        const dayMenu = week[dayKey];
+        setMenuItems(dayMenu?.menuItems || []);
+      } else {
+        setMenuItems([]);
+      }
     }
     loadMenu();
   }, [selectedDate, fetchMenuForDate]);
@@ -78,26 +82,6 @@ export default function MenuDisplay() {
         ? "You will attend lunch on this date"
         : "You will skip lunch on this date",
       variant: willAttend ? "default" : "secondary",
-    });
-  };
-
-  const handleAddMenuItem = () => {
-    if (newItem.trim()) {
-      setMenuItems([...menuItems, newItem.trim()]);
-      setNewItem("");
-      toast({
-        title: "Menu Updated",
-        description: "New item added to menu",
-      });
-    }
-  };
-
-  const handleRemoveMenuItem = (index) => {
-    const updatedItems = menuItems.filter((_, i) => i !== index);
-    setMenuItems(updatedItems);
-    toast({
-      title: "Menu Updated",
-      description: "Item removed from menu",
     });
   };
 
@@ -166,18 +150,8 @@ export default function MenuDisplay() {
 
         {/* Menu Card */}
         <Card className="mb-6">
-          <CardHeader className="flex flex-row items-center justify-between">
+          <CardHeader>
             <CardTitle className="text-xl">Menu Items</CardTitle>
-            {userRole === "admin" && !isPastDate && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setIsEditing(!isEditing)}
-              >
-                <Edit className="h-4 w-4 mr-2" />
-                {isEditing ? "Done Editing" : "Edit Menu"}
-              </Button>
-            )}
           </CardHeader>
 
           <CardContent>
@@ -186,12 +160,6 @@ export default function MenuDisplay() {
                 <p className="text-gray-500 mb-4">
                   No menu items available for this date
                 </p>
-                {userRole === "admin" && !isPastDate && (
-                  <Button onClick={() => setIsEditing(true)}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Menu Items
-                  </Button>
-                )}
               </div>
             ) : (
               <div className="space-y-3">
@@ -201,37 +169,8 @@ export default function MenuDisplay() {
                     className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
                   >
                     <span className="text-gray-800">• {item}</span>
-                    {isEditing && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleRemoveMenuItem(index)}
-                        className="text-red-600 hover:text-red-700"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    )}
                   </div>
                 ))}
-              </div>
-            )}
-
-            {/* Add new item interface for admin */}
-            {isEditing && userRole === "admin" && (
-              <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-                <div className="flex space-x-2">
-                  <input
-                    type="text"
-                    value={newItem}
-                    onChange={(e) => setNewItem(e.target.value)}
-                    placeholder="Enter new menu item..."
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    onKeyDown={(e) => e.key === "Enter" && handleAddMenuItem()}
-                  />
-                  <Button onClick={handleAddMenuItem}>
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                </div>
               </div>
             )}
           </CardContent>
@@ -304,7 +243,7 @@ export default function MenuDisplay() {
           </Card>
         )}
 
-        {/* Admin Stats Section */}
+        {/* Admin Attendance Overview */}
         {userRole === "admin" && (
           <Card className="mb-6">
             <CardHeader>
@@ -360,15 +299,6 @@ export default function MenuDisplay() {
                   <p className="text-sm text-gray-600">50% subsidy</p>
                 </div>
               </div>
-
-              {userRole === "payroll" && (
-                <div className="mt-4 pt-4 border-t">
-                  <Button variant="destructive" size="sm">
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Delete Menu for This Date
-                  </Button>
-                </div>
-              )}
             </CardContent>
           </Card>
         )}

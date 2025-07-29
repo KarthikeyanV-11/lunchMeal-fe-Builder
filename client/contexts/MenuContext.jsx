@@ -1,107 +1,45 @@
 // import { createContext, useContext, useState } from "react";
+// import axios from "axios";
+// import { useDispatch } from "react-redux";
+// import { setFetchedMenu, setNewTemplate } from "../slice/menuSlice";
 
 // const MenuContext = createContext(undefined);
 
-// // Default weekly menu data
-// const defaultWeeklyMenu = {
-//   monday: [
-//     "Sambar",
-//     "Rasam",
-//     "Phulka",
-//     "Curdrice",
-//     "Beetroot poriyal",
-//     "Appalam",
-//     "Pickle",
-//   ],
-//   tuesday: [
-//     "Veg pulao",
-//     "Phulka",
-//     "Curdrice",
-//     "Dal",
-//     "Salad",
-//     "Appalam",
-//     "Pickle",
-//   ],
-//   wednesday: [
-//     "Karakozhambu",
-//     "Rasam",
-//     "Phulka",
-//     "ChowChow kootu",
-//     "Curdrice",
-//     "Appalam",
-//     "Pickle",
-//   ],
-//   thursday: [
-//     "Sambar",
-//     "Rasam",
-//     "Phulka",
-//     "Potato poriyal",
-//     "Curdrice",
-//     "Appalam",
-//     "Pickle",
-//   ],
-//   friday: [
-//     "Jeera rice",
-//     "Phulka",
-//     "Sweet",
-//     "Curdrice",
-//     "Channa Masala",
-//     "Appalam",
-//     "Pickle",
-//   ],
-// };
-
 // export const MenuProvider = ({ children }) => {
 //   const [menus, setMenus] = useState({});
+//   const [loading, setLoading] = useState(false);
+//   const dispatch = useDispatch();
 
-//   const updateMenu = (date, items) => {
-//     setMenus((prev) => ({
-//       ...prev,
-//       [date]: items,
-//     }));
-//   };
+//   const fetchMenuForDate = async (date) => {
+//     if (menus[date]) return menus[date]; // Return from local cache if exists
 
-//   const deleteMenu = (date) => {
-//     setMenus((prev) => {
-//       const newMenus = { ...prev };
-//       delete newMenus[date];
-//       return newMenus;
-//     });
-//   };
+//     try {
+//       setLoading(true);
 
-//   const getMenuForDate = (date) => {
-//     // First check if there's a specific menu for this date
-//     if (menus[date]) {
-//       return menus[date];
+//       // 👇 API call to fetch menu for the given date
+//       const response = await axios.get(`/api/v1/menu/${date}`);
+//       const menuItems = response.data.menuItems || [];
+
+//       // Update local state (caching)
+//       setMenus((prev) => ({
+//         ...prev,
+//         [date]: menuItems,
+//       }));
+
+//       // Update Redux store
+//       dispatch(setFetchedMenu({ date, menu: menuItems }));
+//       // dispatch(setNewTemplate(menuItems));
+//       return menuItems;
+//     } catch (error) {
+//       console.error("Error fetching menu:", error);
+//       return [];
+//     } finally {
+//       setLoading(false);
 //     }
-
-//     // If no specific menu, return default weekly menu based on day of week
-//     const dateObj = new Date(date);
-//     const dayOfWeek = dateObj.getDay(); // 0 = Sunday, 1 = Monday, etc.
-
-//     // Skip weekends (Saturday = 6, Sunday = 0)
-//     if (dayOfWeek === 0 || dayOfWeek === 6) {
-//       return null;
-//     }
-
-//     const dayNames = [
-//       "sunday",
-//       "monday",
-//       "tuesday",
-//       "wednesday",
-//       "thursday",
-//       "friday",
-//       "saturday",
-//     ];
-//     const dayName = dayNames[dayOfWeek];
-
-//     return defaultWeeklyMenu[dayName] || null;
 //   };
 
 //   return (
-//     <MenuContext.Provider
-//       value={{ menus, updateMenu, deleteMenu, getMenuForDate }}
-//     >
+//     <MenuContext.Provider value={{ fetchMenuForDate, loading }}>
 //       {children}
 //     </MenuContext.Provider>
 //   );
@@ -115,112 +53,65 @@
 //   return context;
 // };
 
-//the backend part
-
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import axios from "axios";
+import { useDispatch } from "react-redux";
+import { setFetchedMenu, setNewTemplate } from "../slice/menuSlice";
 
 const MenuContext = createContext(undefined);
-
-const defaultWeeklyMenu = {
-  monday: [
-    "Sambar",
-    "Rasam",
-    "Phulka",
-    "Curdrice",
-    "Beetroot poriyal",
-    "Appalam",
-    "Pickle",
-  ],
-  tuesday: [
-    "Veg pulao",
-    "Phulka",
-    "Curdrice",
-    "Dal",
-    "Salad",
-    "Appalam",
-    "Pickle",
-  ],
-  wednesday: [
-    "Karakozhambu",
-    "Rasam",
-    "Phulka",
-    "ChowChow kootu",
-    "Curdrice",
-    "Appalam",
-    "Pickle",
-  ],
-  thursday: [
-    "Sambar",
-    "Rasam",
-    "Phulka",
-    "Potato poriyal",
-    "Curdrice",
-    "Appalam",
-    "Pickle",
-  ],
-  friday: [
-    "Jeera rice",
-    "Phulka",
-    "Sweet",
-    "Curdrice",
-    "Channa Masala",
-    "Appalam",
-    "Pickle",
-  ],
-};
 
 export const MenuProvider = ({ children }) => {
   const [menus, setMenus] = useState({});
   const [loading, setLoading] = useState(false);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    const fetchTemplates = async () => {
+      try {
+        const response = await axios.get(
+          "http://172.26.33.78:8080/api/v1/menu/all",
+        );
+        const templates = response.data;
+        console.log(templates);
+        dispatch(setNewTemplate(templates));
+      } catch (error) {
+        console.error("Error fetching templates:", error);
+      }
+    };
+
+    fetchTemplates();
+  }, [dispatch]);
 
   const fetchMenuForDate = async (date) => {
-    if (menus[date]) return menus[date]; // Cached
-
     try {
       setLoading(true);
-      const response = await axios.get(`/api/v1/menu/${date}`);
-      const menuItems = response.data.menuItems;
 
-      if (menuItems && menuItems.length > 0) {
-        setMenus((prev) => ({
-          ...prev,
-          [date]: menuItems,
-        }));
-        return menuItems;
-      }
+      // 👇 API call to fetch weekly menu data
+      const response = await axios.get(`/api/v1/menuSchedule/${date}`);
+      const weeklyData = response.data;
 
-      // If backend has no menu for this date, fall back to default
-      const fallback = getDefaultMenu(date);
+      // Create a key like "2025-07-21_to_2025-07-25"
+      const key = `${weeklyData.startDate}_to_${weeklyData.endDate}`;
+
+      // Return from local cache if already fetched
+      if (menus[key]) return menus[key];
+
+      // Cache locally
       setMenus((prev) => ({
         ...prev,
-        [date]: fallback,
+        [key]: weeklyData,
       }));
-      return fallback;
+
+      // Dispatch to Redux store
+      dispatch(setFetchedMenu({ key, week: weeklyData }));
+
+      return weeklyData;
     } catch (error) {
-      console.error("Error fetching menu:", error);
-      return [];
+      console.error("Error fetching weekly menu:", error);
+      return null;
     } finally {
       setLoading(false);
     }
-  };
-
-  const getDefaultMenu = (date) => {
-    const dateObj = new Date(date);
-    const day = dateObj.getDay(); // 0 (Sun) – 6 (Sat)
-    if (day === 0 || day === 6) return null;
-
-    const dayNames = [
-      "sunday",
-      "monday",
-      "tuesday",
-      "wednesday",
-      "thursday",
-      "friday",
-      "saturday",
-    ];
-    const name = dayNames[day];
-    return defaultWeeklyMenu[name] || null;
   };
 
   return (

@@ -22,32 +22,34 @@
 
 //     try {
 //       const res = await fetch(
-//         "http://192.168.3.121:8080/api/v1/employee/code/info-001",
+//         "http://192.168.3.121:8080/api/v1/employee/getAllEmployees", //get all employees
 //         {
-//           method: "POST",
+//           method: "GET",
 //           headers: {
 //             "Content-Type": "application/json",
 //           },
-//           body: JSON.stringify({ employeeCode, password, role }),
+//           // body: JSON.stringify({ employeeCode, password, role }),
 //         },
 //       );
 
 //       const data = await res.json();
 
 //       if (data.success) {
-//         localStorage.setItem("token", data.token);
+//         // localStorage.setItem("token", data.token);
 
-//         dispatch(
-//           setUser({
-//             name: data.name,
-//             role: role,
-//             code: employeeCode,
-//           }),
-//         );
-//         login(role); // ✅ This updates the context (required for ProtectedRoute)
-//         navigate(`/${role}`);
+//         // dispatch(
+//         //   setUser({
+//         //     name: data.name,
+//         //     role: role,
+//         //     code: employeeCode,
+//         //   }),
+//         // );
+//         console.log(data);
+//         // login(role); // ✅ This updates the context (required for ProtectedRoute)
+//         // navigate(`/${role}`);
 //       } else {
-//         setError(data.message || "Invalid credentials. Please try again.");
+//         // setError(data.message || "Invalid credentials. Please try again.");
+//         console.log(data);
 //       }
 //     } catch (err) {
 //       console.error(err);
@@ -70,7 +72,7 @@
 //               placeholder="Employee Code"
 //               value={employeeCode}
 //               onChange={(e) => setEmployeeCode(e.target.value)}
-//               required
+//               // required
 //               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
 //             />
 //             <input
@@ -78,7 +80,7 @@
 //               placeholder="Password"
 //               value={password}
 //               onChange={(e) => setPassword(e.target.value)}
-//               required
+//               // required
 //               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
 //             />
 //             {error && <p className="text-red-500 text-sm">{error}</p>}

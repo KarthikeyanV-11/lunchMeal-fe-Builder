@@ -64,7 +64,7 @@ export const Navigation = () => {
           {/* Logo */}
           <div className="flex items-center">
             <Link to="/" className="text-xl font-bold text-primary">
-              LunchApp
+              ICMeal
             </Link>
           </div>
 

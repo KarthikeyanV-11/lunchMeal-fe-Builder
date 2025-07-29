@@ -10,6 +10,7 @@ const WeekMenuModal = ({
   menuTemplates,
   onSave,
 }) => {
+  console.log(menuTemplates);
   if (!isModalOpen || !weekData) return null;
 
   const [assignedMenus, setAssignedMenus] = useState(() => {
@@ -22,18 +23,49 @@ const WeekMenuModal = ({
     return initialAssignments;
   });
 
+  /**
+   * Checks if a specific day is editable based on the weekData.
+   * If weekData.isDayEditable is not provided, all days are considered editable by default.
+   * @param {string} dayKey - The lowercase string representation of the day (e.g., "monday").
+   * @returns {boolean} True if the day is editable, false otherwise.
+   */
+  const isDayEditable = (dayKey) => {
+    // If weekData.isDayEditable is not explicitly provided, assume all days are editable.
+    if (!weekData.isDayEditable) {
+      return true;
+    }
+    // Otherwise, return the specific editable status for the day.
+    return weekData.isDayEditable[dayKey];
+  };
+
+  /**
+   * Handles the change event for the day assignment select dropdown.
+   * Only allows changes if the day is editable.
+   * @param {string} day - The lowercase string representation of the day.
+   * @param {string} templateId - The ID of the selected menu template.
+   */
   const handleSelectChange = (day, templateId) => {
+    // Prevent changes if the day is not editable.
+    if (!isDayEditable(day)) {
+      console.warn(`Attempted to change a locked day: ${day}`);
+      return;
+    }
     const selectedTemplate = menuTemplates.find(
-      (t) => t.id === parseInt(templateId),
+      (t) => Number(t.id) === Number(templateId),
     );
+
     setAssignedMenus((prev) => ({
       ...prev,
       [day]: selectedTemplate || null,
     }));
   };
 
+  /**
+   * Handles the save action, passing the current week data and assigned menus
+   * to the parent component's onSave callback.
+   */
   const handleSave = () => {
-    onSave(weekData, assignedMenus);
+    onSave(weekData, assignedMenus); // <-- fixed: using the actual state variable
   };
 
   const dayLabels = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
@@ -62,20 +94,26 @@ const WeekMenuModal = ({
           {dayLabels.map((day, index) => {
             const dayKey = day.toLowerCase();
             const assigned = assignedMenus[dayKey];
+            const editable = isDayEditable(dayKey); // Determine if the day is editable
             return (
               <div
                 key={day}
-                className="flex flex-col items-center p-3 border rounded-lg bg-gray-50"
+                // Apply different background and cursor for locked days
+                className={`flex flex-col items-center p-3 border rounded-lg ${editable ? "bg-gray-50" : "bg-gray-200 opacity-70 cursor-not-allowed"}`}
               >
                 <span className="text-sm font-medium text-gray-700 mb-1">
                   {day}
                 </span>
                 <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-xl">
-                  {assigned ? assigned.emoji : "🍽"}
+                  {assigned ? assigned.emoji || "🍽" : "🍽"}
                 </div>
                 <span className="text-xs text-gray-500 mt-1">
-                  {assigned ? assigned.name : "Not assigned"}
+                  {assigned ? assigned.menuName : "Not assigned"}
                 </span>
+
+                {!editable && ( // Display "Locked" text if the day is not editable
+                  <span className="text-xs text-red-500 mt-1">Locked</span>
+                )}
               </div>
             );
           })}
@@ -88,6 +126,7 @@ const WeekMenuModal = ({
           </h3>
           {dayLabels.map((day, index) => {
             const dayKey = day.toLowerCase();
+            const editable = isDayEditable(dayKey); // Determine if the day is editable
             return (
               <div key={`assign-${day}`} className="flex items-center">
                 <label
@@ -97,15 +136,18 @@ const WeekMenuModal = ({
                   {day}
                 </label>
                 <select
-                  id={`select-${dayKey}`}
+                  id={`select-${dayKey}`} // ✅ Fix here
                   className="flex-1 border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
                   value={assignedMenus[dayKey]?.id || ""}
-                  onChange={(e) => handleSelectChange(dayKey, e.target.value)}
+                  onChange={(e) =>
+                    handleSelectChange(dayKey, parseInt(e.target.value))
+                  }
+                  disabled={!editable}
                 >
                   <option value="">No menu assigned</option>
-                  {menuTemplates.map((template) => (
-                    <option key={template.id} value={template.id}>
-                      {template.emoji} {template.name}
+                  {menuTemplates?.map((template) => (
+                    <option key={template?.id} value={template?.id}>
+                      {template?.menuName}
                     </option>
                   ))}
                 </select>

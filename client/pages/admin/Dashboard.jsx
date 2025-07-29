@@ -4,8 +4,72 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Users, DollarSign, Calendar, TrendingUp } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { setEmployees } from "../../slice/employeeSlice";
+import axios from "axios";
+import toast from "react-hot-toast";
+
+//uses employeeSlice redux.
+//backend api format: [{},{}...{}]
 
 export default function AdminDashboard() {
+  const dispatch = useDispatch();
+  const [title, setTitle] = useState("");
+  const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
+  const employeeStrength = useSelector(
+    (state) => state.employee.allEmployees.length,
+  );
+  const subscribedEmployees = useSelector(
+    (state) => state.employee.subscribedEmployees.length,
+  );
+  // console.log(employeeStrength[0]);
+
+  useEffect(() => {
+    const fetchEmployees = async () => {
+      try {
+        const response = await axios.get(
+          "http://192.168.3.121:8080/api/v1/employee/getAllEmployees", // url for fetching all the employee details
+        );
+
+        const employeesArray = response.data;
+        // console.log(employeesArray[0]); getting the first user
+
+        dispatch(setEmployees(employeesArray));
+      } catch (error) {
+        console.error("Error fetching employees:", error.message);
+      }
+    };
+
+    fetchEmployees();
+  }, [dispatch]);
+
+  const handleSendNotification = async () => {
+    if (!title || !message) {
+      toast.error("Both title and message are required");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await axios.post("http://192.168.3.121:8080/api/v1/notifications", {
+        title,
+        message,
+        date: new Date().toISOString(),
+      });
+
+      toast.success("Notification sent successfully");
+      setTitle("");
+      setMessage("");
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to send notification");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <Layout>
       <div className="max-w-7xl mx-auto p-6">
@@ -29,7 +93,7 @@ export default function AdminDashboard() {
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">156</div>
+              <div className="text-2xl font-bold">{subscribedEmployees}</div>
               <p className="text-xs text-muted-foreground">
                 +12 from last month
               </p>
@@ -44,9 +108,12 @@ export default function AdminDashboard() {
               {/* <DollarSign className="h-4 w-4 text-muted-foreground" /> */}₹
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">₹2,80,800</div>
+              <div className="text-2xl font-bold">
+                ₹ {subscribedEmployees * 100}
+              </div>{" "}
+              {/* subscribedEmployees * 100*/}
               <p className="text-xs text-muted-foreground">
-                Employee share: ₹1,40,400
+                Employee share: {subscribedEmployees * 35}
               </p>
             </CardContent>
           </Card>
@@ -86,29 +153,32 @@ export default function AdminDashboard() {
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <Calendar className="h-5 w-5" />
-                <span>Today's Menu</span>
+                <span>Send a notification</span>
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-2 mb-4">
-                <div className="text-sm text-gray-600">
-                  • Sambar • Rasam • Phulka • Curd Rice
-                </div>
-                <div className="text-sm text-gray-600">
-                  • Beetroot Poriyal • Appalam • Pickle
-                </div>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">
-                  Expected attendees: 142
-                </span>
-                <Button size="sm" variant="outline">
-                  Edit Menu
+              <div className="space-y-4">
+                <input
+                  type="text"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="Notification Title"
+                  className="w-full p-2 border rounded"
+                />
+                <textarea
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  placeholder="Notification Message"
+                  rows={4}
+                  className="w-full p-2 border rounded"
+                />
+
+                <Button onClick={handleSendNotification} disabled={loading}>
+                  {loading ? "Sending..." : "Send Notification"}
                 </Button>
               </div>
             </CardContent>
           </Card>
-
           <Card>
             <CardHeader>
               <CardTitle>Subscription Controls</CardTitle>
