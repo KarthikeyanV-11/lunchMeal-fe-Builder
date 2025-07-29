@@ -32,21 +32,29 @@ import { createSlice } from "@reduxjs/toolkit";
 const menuSlice = createSlice({
   name: "menu",
   initialState: {
-    availableTemplates: [], // template data which can the admin access for adding the available templates
-    fetchedMenus: {}, // For actual week-specific menus using startDate_to_endDate as key
+    availableTemplates: [],
+    fetchedMenus: {},
   },
   reducers: {
     setNewTemplate(state, action) {
-      state.availableTemplates.push(action.payload);
+      const newTemplate = action.payload;
+
+      // Avoid adding duplicates based on unique id
+      const alreadyExists = state.availableTemplates.some(
+        (template) => template.id === newTemplate.id,
+      );
+      if (!alreadyExists) {
+        state.availableTemplates.push(newTemplate);
+      }
     },
     clearSingleTemplate(state, action) {
       const id = action.payload;
       state.availableTemplates = state.availableTemplates.filter(
-        (curr) => curr.id !== id, // assuming each template has an id
+        (curr) => curr.id !== id,
       );
     },
     setFetchedMenu(state, action) {
-      const { key, week } = action.payload; // key = "startDate_to_endDate"
+      const { key, week } = action.payload;
       state.fetchedMenus[key] = week;
     },
   },

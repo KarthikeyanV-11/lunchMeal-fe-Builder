@@ -1,425 +1,3 @@
-// import { useState, useEffect } from "react";
-// import {
-//   ChevronLeft,
-//   ChevronRight,
-//   Lock,
-//   Edit3,
-//   CalendarDays,
-//   Vegan,
-// } from "lucide-react";
-// import { Layout } from "@/components/shared/Layout";
-// import { useAuth } from "@/contexts/AuthContext";
-// import { Button } from "@/components/ui/button";
-// import WeekMenuModal from "../../components/ui/WeekMenuModal"; // Corrected import path/name
-// import CreateTemplateModal from "../../components/ui/CreateTemplateModal"; // Renamed and imported the 'Modal' component for creating templates
-// import { useNavigate } from "react-router-dom";
-// import { useSelector } from "react-redux";
-// import { RefreshCw } from "lucide-react";
-
-// export default function AdminWeekViewCalendar() {
-//   const [weeks, setWeeks] = useState([]);
-//   const [currentDate, setCurrentDate] = useState(new Date());
-
-//   // State for the Weekly Menu Assignment Modal
-//   const [isWeekMenuModalOpen, setIsWeekMenuModalOpen] = useState(false);
-//   // State for the Create New Template Modal
-//   const [isCreateTemplateModalOpen, setIsCreateTemplateModalOpen] =
-//     useState(false);
-
-//   // New state to hold data for the selected week to be passed to the WeekMenuModal
-//   const [selectedWeekData, setSelectedWeekData] = useState(null);
-//   const navigate = useNavigate();
-
-//   const { role } = useAuth();
-
-//   useEffect(() => {
-//     const generateWeeks = () => {
-//       const result = [];
-
-//       const firstDayOfMonth = new Date(
-//         currentDate.getFullYear(),
-//         currentDate.getMonth(),
-//         1,
-//       );
-//       const currentSunday = new Date(firstDayOfMonth);
-//       currentSunday.setDate(
-//         firstDayOfMonth.getDate() - firstDayOfMonth.getDay(),
-//       );
-
-//       for (let i = 0; i < 5; i++) {
-//         const weekStart = new Date(currentSunday);
-//         weekStart.setDate(currentSunday.getDate() + i * 7);
-
-//         const weekDates = [];
-//         for (let d = 0; d < 7; d++) {
-//           const date = new Date(weekStart);
-//           date.setDate(weekStart.getDate() + d);
-//           weekDates.push(date);
-//         }
-
-//         const monday = weekDates[1];
-//         const friday = weekDates[5];
-//         const rangeLabel = `${formatDisplayDate(monday)} - ${formatDisplayDate(friday)}`;
-
-//         result.push({
-//           range: rangeLabel,
-//           dates: weekDates,
-//           assignedMenus: {
-//             monday: null,
-//             tuesday: null,
-//             wednesday: null,
-//             thursday: null,
-//             friday: null,
-//           },
-//         });
-//       }
-
-//       setWeeks(result);
-//     };
-
-//     generateWeeks();
-//   }, [currentDate]);
-
-//   const formatDisplayDate = (date) => {
-//     const options = { month: "short", day: "numeric" };
-//     return date.toLocaleDateString("en-US", options);
-//   };
-
-//   const formatRouteDate = (date) => {
-//     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(
-//       date.getDate(),
-//     ).padStart(2, "0")}`;
-//   };
-
-//   const isWeekEditable = (weekDates) => {
-//     if (!Array.isArray(weekDates)) return false;
-
-//     const today = new Date();
-//     today.setHours(0, 0, 0, 0); // Normalize time
-
-//     // Week is editable ONLY IF all dates are after today
-//     return weekDates.every((d) => {
-//       const date = new Date(d);
-//       date.setHours(0, 0, 0, 0);
-//       return date > today;
-//     });
-//   };
-
-//   const goToPreviousMonth = () => {
-//     setCurrentDate(
-//       (prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1),
-//     );
-//   };
-
-//   const goToNextMonth = () => {
-//     setCurrentDate(
-//       (prev) => new Date(prev.getFullYear(), prev.getMonth() + 1, 1),
-//     );
-//   };
-
-//   const getCurrentMonthYear = () => {
-//     const options = { month: "long", year: "numeric" };
-//     return currentDate.toLocaleDateString("en-US", options);
-//   };
-
-//   const dayLabels = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
-
-//   // This list would ideally come from an API or a global state
-//   const menuTemplates = useSelector((state) => state.menu.availableTemplates);
-//   console.log(menuTemplates);
-
-//   const handleWeekClick = (week) => {
-//     const editable = isWeekEditable(week.dates);
-
-//     if (editable) {
-//       setSelectedWeekData(week);
-//       setIsWeekMenuModalOpen(true);
-//     } else {
-//       alert("This week's menu is locked and cannot be modified.");
-//     }
-//   };
-
-//   // Function to handle saving assignments from the WeekMenuModal (to be passed to modal)
-//   const handleSaveWeekAssignment = (weekToUpdate, assignments) => {
-//     console.log(
-//       "Saving assignments for week:",
-//       weekToUpdate.range,
-//       assignments,
-//     );
-
-//     setWeeks((prevWeeks) =>
-//       prevWeeks.map((week) =>
-//         week.range === weekToUpdate.range
-//           ? { ...week, assignedMenus: assignments }
-//           : week,
-//       ),
-//     );
-
-//     setIsWeekMenuModalOpen(false); // Close the correct modal after saving
-//     setSelectedWeekData(null); // Clear selected data
-//   };
-
-//   // Function to handle creating a new template (placeholder for now)
-//   const handleCreateNewTemplate = (templateData) => {
-//     console.log("Creating new template:", templateData);
-//     // Here you would typically send templateData to your backend API
-//     // Then, you might update your local menuTemplates state or refetch them
-//     // For now, let's just close the modal
-//     setIsCreateTemplateModalOpen(false);
-//   };
-
-//   return (
-//     <Layout>
-//       <div className="max-w-5xl mx-auto p-6">
-//         {/* Header with Month Navigation */}
-//         <div className="flex items-center justify-between mb-6">
-//           <div className="flex items-center gap-3">
-//             <div className="w-6 h-6 rounded flex items-center justify-center">
-//               <div>
-//                 <CalendarDays />
-//               </div>
-//             </div>
-//             <h1 className="text-3xl font-bold text-gray-800">
-//               Menu Assignment Calendar
-//             </h1>
-//           </div>
-//           <div className="flex items-center gap-2">
-//             <button
-//               className="p-2 hover:bg-gray-200 rounded"
-//               onClick={goToPreviousMonth}
-//             >
-//               <ChevronLeft className="w-5 h-5" />
-//             </button>
-//             <span className="px-4 py-1 text-lg font-medium">
-//               {getCurrentMonthYear()}
-//             </span>
-//             <button
-//               className="p-2 hover:bg-gray-200 rounded"
-//               onClick={goToNextMonth}
-//             >
-//               <ChevronRight className="w-5 h-5" />
-//             </button>
-//           </div>
-//         </div>
-
-//         {/* Calendar Grid */}
-//         <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-//           <div className="grid grid-cols-6 border-b border-gray-200">
-//             <div className="p-4 font-medium text-gray-700 border-r border-gray-200">
-//               Week
-//             </div>
-//             {dayLabels.map((day) => (
-//               <div
-//                 key={day}
-//                 className="p-4 font-medium text-gray-700 text-center border-r border-gray-200 last:border-r-0"
-//               >
-//                 {day}
-//               </div>
-//             ))}
-//           </div>
-//           {weeks.map((week, index) => {
-//             const monday = week.dates[1];
-//             const editable = isWeekEditable(monday);
-//             return (
-//               <div
-//                 key={index}
-//                 className={`grid grid-cols-6 border-b border-gray-200 last:border-b-0`}
-//               >
-//                 {/* Week Label Column with onClick for WeekMenuModal */}
-//                 <div
-//                   className={`p-4 border-r border-gray-200 flex flex-col cursor-pointer ${
-//                     isWeekEditable(week.dates)
-//                       ? "hover:bg-gray-50"
-//                       : "opacity-70"
-//                   }`}
-//                   onClick={() => {
-//                     if (isWeekEditable(week.dates)) {
-//                       setSelectedWeekData(week);
-//                       setIsWeekMenuModalOpen(true);
-//                     } else {
-//                       alert(
-//                         "This week's menu is locked and cannot be modified.",
-//                       );
-//                     }
-//                   }}
-//                 >
-//                   <div className="font-medium text-gray-800 mb-2">
-//                     {week.range}
-//                   </div>
-//                   <div className="flex items-center gap-2">
-//                     {isWeekEditable(week.dates) ? (
-//                       <>
-//                         <Edit3 className="w-4 h-4 text-green-500" />
-//                         <span className="text-sm text-green-600 font-medium">
-//                           Editable
-//                         </span>
-//                       </>
-//                     ) : (
-//                       <>
-//                         <Lock className="w-4 h-4 text-gray-400" />
-//                         <span className="text-sm text-gray-500 font-medium">
-//                           Locked
-//                         </span>
-//                       </>
-//                     )}
-//                   </div>
-//                 </div>
-
-//                 {/* Day Columns (Mon–Fri) */}
-//                 {week.dates.slice(1, 6).map((date, idx) => {
-//                   const dayKey = dayLabels[idx]?.toLowerCase(); // e.g., 'monday'
-//                   const assignedMenu = week.assignedMenus[dayKey];
-//                   const formattedDate = formatRouteDate(date);
-
-//                   return (
-//                     <div
-//                       key={idx}
-//                       className="p-4 border-r border-gray-200 last:border-r-0 text-center hover:bg-gray-50 cursor-pointer"
-//                       onClick={(e) => {
-//                         e.stopPropagation(); // Prevent parent row click
-//                         // navigate(`/menu/${formattedDate}`); // Navigate to display page
-//                         navigate(`/menu/${role}/${formattedDate}`);
-//                       }}
-//                     >
-//                       <div className="flex flex-col items-center gap-2">
-//                         <div className="w-8 h-8 bg-gray-100 rounded flex items-center justify-center">
-//                           <div className="text-gray-400 text-lg">🍽</div>
-//                         </div>
-//                         <span className="text-sm text-gray-500">
-//                           {assignedMenu ? assignedMenu.name : "Not assigned"}
-//                         </span>
-//                       </div>
-//                     </div>
-//                   );
-//                 })}
-//               </div>
-//             );
-//           })}
-//         </div>
-
-//         <div className="flex justify-center items-center">
-//           <Button className="mt-4 flex gap-2 justify-center items-center">
-//             <RefreshCw className="w-4" /> <span>Sync</span>
-//           </Button>
-//         </div>
-
-//         {/* Access Policy */}
-//         <div className="bg-orange-200 text-gray-900 p-4 rounded-md mt-6 text-sm">
-//           <h2 className="font-semibold mb-1">Access Control Policy</h2>
-//           <p>
-//             Menu assignments for each week must be made before the Sunday
-//             preceding that week.
-//           </p>
-//           <p>
-//             Once a week starts (Monday), the menu becomes locked and cannot be
-//             modified.
-//           </p>
-//           <p className="mt-2">
-//             <span className="text-green-600 font-semibold">
-//               Green "Editable"
-//             </span>{" "}
-//             : Week can still be assigned/modified
-//           </p>
-//           <p>
-//             <span className="text-gray-500 font-semibold">Gray "Locked"</span>:
-//             Assignment window has closed
-//           </p>
-//         </div>
-
-//         {/* Menu Templates Section */}
-//         <div className="mt-10 border rounded-xl p-4 shadow-sm hover:shadow-md transition">
-//           <div className="flex justify-between">
-//             <h2 className="text-xl font-semibold mb-4">
-//               🍚 Available Menu Templates
-//             </h2>
-//             <Button
-//               size="sm"
-//               onClick={() => setIsCreateTemplateModalOpen(true)}
-//             >
-//               + New Template
-//             </Button>
-//           </div>
-//           <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
-//             {menuTemplates.map((template) => (
-//               <div
-//                 key={template.id}
-//                 className="bg-white rounded-lg p-4 border border-gray-200
-//         hover:shadow-md transition-shadow duration-200 ease-in-out
-//         flex flex-col text-gray-800 overflow-hidden"
-//               >
-//                 {/* Top Section: Name and Emoji */}
-//                 <div className="flex items-center justify-between mb-3">
-//                   <h3 className="text-xl font-semibold flex-grow pr-2 break-words">
-//                     {template.name}
-//                   </h3>
-//                   {template.emoji && (
-//                     <div
-//                       className="text-2xl"
-//                       role="img"
-//                       aria-label={template.name}
-//                     >
-//                       {template.emoji}
-//                     </div>
-//                   )}
-//                 </div>
-
-//                 {/* Description (Clamp to 3 lines with ellipsis) */}
-//                 {template.description && (
-//                   <p className="text-lg text-gray-600 mb-3 line-clamp-3 break-words">
-//                     {template.description}
-//                   </p>
-//                 )}
-
-//                 {/* Type Badge */}
-//                 <div className="flex justify-start">
-//                   <p className="bg-gray-100 text-gray-700 text-xs font-medium px-2.5 py-0.5 rounded mb-3">
-//                     {template.type}
-//                   </p>
-//                 </div>
-
-//                 {/* Items (wrapped & scrollable if too many items) */}
-//                 <div className="max-h-20 overflow-auto mb-3">
-//                   <p className="text-gray-700 text-base font-medium break-words whitespace-pre-wrap">
-//                     Items: {template.items.join(", ")}
-//                   </p>
-//                 </div>
-//               </div>
-//             ))}
-//             {/* Message for no templates */}
-//             {menuTemplates.length === 0 && (
-//               <p className="col-span-full text-center text-gray-500 italic py-8">
-//                 No menu templates available. Click "+ New Template" to create
-//                 one!
-//               </p>
-//             )}
-//           </div>
-//         </div>
-
-//         {/* Modals */}
-//         {/* Week Menu Assignment Modal */}
-//         {isWeekMenuModalOpen && selectedWeekData && (
-//           <WeekMenuModal
-//             isModalOpen={isWeekMenuModalOpen} // Use the correct state variable
-//             setIsModalOpen={setIsWeekMenuModalOpen} // Use the correct setter
-//             weekData={selectedWeekData}
-//             menuTemplates={menuTemplates}
-//             onSave={handleSaveWeekAssignment}
-//           />
-//         )}
-
-//         {/* Create New Template Modal */}
-//         {isCreateTemplateModalOpen && (
-//           <CreateTemplateModal
-//             isOpen={isCreateTemplateModalOpen} // Pass the state to the modal
-//             setIsOpen={setIsCreateTemplateModalOpen} // Pass the setter to the modal
-//             onSaveTemplate={handleCreateNewTemplate} // Pass a handler for saving new templates
-//           />
-//         )}
-//       </div>
-//     </Layout>
-//   );
-// }
-
 // src/components/ui/AdminWeekViewCalendar.jsx ----> updated
 import React, { useState, useEffect } from "react";
 import {
@@ -442,6 +20,11 @@ import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { RefreshCw } from "lucide-react";
 
+///
+import { useDispatch } from "react-redux";
+import { setNewTemplate } from "../../slice/menuSlice";
+///
+
 export default function AdminWeekViewCalendar() {
   const [weeks, setWeeks] = useState([]);
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -455,6 +38,7 @@ export default function AdminWeekViewCalendar() {
   // New state to hold data for the selected week to be passed to the WeekMenuModal
   const [selectedWeekData, setSelectedWeekData] = useState(null);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const { role } = useAuth();
 
@@ -589,7 +173,9 @@ export default function AdminWeekViewCalendar() {
   const dayLabels = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 
   // This list would ideally come from an API or a global state
-  const [menuTemplates] = useSelector((state) => state.menu.availableTemplates);
+  // const [menuTemplates] = useSelector((state) => state.menu.availableTemplates);
+  const menuTemplates = useSelector((state) => state.menu.availableTemplates);
+
   console.log(menuTemplates);
 
   const handleWeekClick = (week) => {
@@ -628,11 +214,19 @@ export default function AdminWeekViewCalendar() {
   };
 
   // Function to handle creating a new template (placeholder for now)
+  // const handleCreateNewTemplate = (templateData) => {
+  //   console.log("Creating new template:", templateData);
+  //   // Here you would typically send templateData to your backend API
+  //   // Then, you might update your local menuTemplates state or refetch them
+  //   // For now, let's just close the modal
+  //   setIsCreateTemplateModalOpen(false);
+  // };
+
   const handleCreateNewTemplate = (templateData) => {
     console.log("Creating new template:", templateData);
-    // Here you would typically send templateData to your backend API
-    // Then, you might update your local menuTemplates state or refetch them
-    // For now, let's just close the modal
+
+    dispatch(setNewTemplate(templateData)); // ✅ immediately update Redux state
+
     setIsCreateTemplateModalOpen(false);
   };
 
@@ -846,7 +440,7 @@ export default function AdminWeekViewCalendar() {
                     <h3 className="text-xl font-semibold flex-grow pr-2 break-words">
                       {template.menuName}
                     </h3>
-                    {template.emoji && (
+                    {template.emoji || (
                       <div
                         className="text-2xl"
                         role="img"
