@@ -26,6 +26,8 @@ import { setNewTemplate } from "../../slice/menuSlice";
 ///
 
 export default function AdminWeekViewCalendar() {
+  const BASE_URL = import.meta.env.VITE_BACKEND_URL;
+
   const [weeks, setWeeks] = useState([]);
   const [currentDate, setCurrentDate] = useState(new Date());
 
@@ -99,7 +101,80 @@ export default function AdminWeekViewCalendar() {
       setWeeks(result);
     };
 
+    const fetchMonthlyMenu = async () => {
+      try {
+        const res = await fetch(
+          `${BASE_URL}/menuSchedule/byMonthAndYear?month=${currentDate.getMonth() + 1}&year=${currentDate.getFullYear()}`,
+        );
+
+        console.log("API Response:", res);
+
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+
+        const data = await res.json();
+        console.log("Fetched Data:", data); // 👀 See the raw API data
+
+        const allSchedules = data.flatMap((week) =>
+          ["monday", "tuesday", "wednesday", "thursday", "friday"]
+            .map((day) => week[day])
+            .filter(Boolean),
+        );
+
+        console.log("Flattened Schedules (Mon–Fri):", allSchedules);
+
+        setWeeks((prevWeeks) =>
+          prevWeeks.map((week, index) => {
+            const updatedAssignedMenus = { ...week.assignedMenus };
+
+            console.log(`\n--- Week ${index + 1} ---`);
+            week.dates.forEach((date) => {
+              const formatted = date.toISOString().split("T")[0];
+              const schedule = allSchedules.find(
+                (entry) => entry?.date === formatted,
+              );
+
+              console.log(`Checking date: ${formatted}`);
+              if (schedule) {
+                const day = date
+                  .toLocaleDateString("en-US", { weekday: "long" })
+                  .toLowerCase();
+
+                console.log(`→ Found match on ${day}:`, schedule);
+
+                if (
+                  [
+                    "monday",
+                    "tuesday",
+                    "wednesday",
+                    "thursday",
+                    "friday",
+                  ].includes(day)
+                ) {
+                  updatedAssignedMenus[day] = {
+                    menuName: schedule.menuName,
+                    menuType: schedule.menuType,
+                  };
+                }
+              } else {
+                console.log(`→ No match found for ${formatted}`);
+              }
+            });
+
+            return {
+              ...week,
+              assignedMenus: updatedAssignedMenus,
+            };
+          }),
+        );
+      } catch (error) {
+        console.error("Failed to fetch monthly menu:", error);
+      }
+    };
+
     generateWeeks();
+    fetchMonthlyMenu(); // 🆕 Add this
   }, [currentDate]);
 
   const formatDisplayDate = (date) => {
@@ -332,15 +407,52 @@ export default function AdminWeekViewCalendar() {
                   const formattedDate = formatRouteDate(date);
                   const editableDay = isDayEditable(date); // Check individual day's editability
 
+                  // return (
+                  //   <div
+                  //     key={idx}
+                  //     className={`p-4 border-r border-gray-200 last:border-r-0 text-center hover:bg-gray-50 cursor-pointer ${
+                  //       !editableDay ? "opacity-70" : "" // Dim if not editable
+                  //     }`}
+                  //     onClick={(e) => {
+                  //       e.stopPropagation(); // Prevent parent row click
+                  //       // We still allow navigation to view past menus, just not editing
+                  //       navigate(`/menu/${role}/${formattedDate}`);
+                  //     }}
+                  //   >
+                  //     <div className="flex flex-col items-center gap-2">
+                  //       <div className="w-8 h-8 bg-gray-100 rounded flex items-center justify-center">
+                  //         <div className="text-gray-400 text-lg">
+                  //           <UtensilsCrossed />
+                  //         </div>
+                  //       </div>
+                  //       <span className="text-sm text-gray-500 mb-1">
+                  //         {assignedMenu
+                  //           ? assignedMenu.menuName
+                  //           : "Not assigned"}
+                  //       </span>
+
+                  //       {/* Show lock/edit icon for individual days */}
+                  //       <div className="flex items-center gap-1">
+                  //         {editableDay ? (
+                  //           <Edit3 className="w-3 h-3 text-green-500" />
+                  //         ) : (
+                  //           <Lock className="w-3 h-3 text-gray-400" />
+                  //         )}
+                  //         <span className="text-xs text-gray-500">
+                  //           {editableDay ? "Editable" : "Locked"}
+                  //         </span>
+                  //       </div>
+                  //     </div>
+                  //   </div>
+                  // );
                   return (
                     <div
                       key={idx}
                       className={`p-4 border-r border-gray-200 last:border-r-0 text-center hover:bg-gray-50 cursor-pointer ${
-                        !editableDay ? "opacity-70" : "" // Dim if not editable
+                        !editableDay ? "opacity-70" : ""
                       }`}
                       onClick={(e) => {
-                        e.stopPropagation(); // Prevent parent row click
-                        // We still allow navigation to view past menus, just not editing
+                        e.stopPropagation();
                         navigate(`/menu/${role}/${formattedDate}`);
                       }}
                     >
@@ -350,13 +462,13 @@ export default function AdminWeekViewCalendar() {
                             <UtensilsCrossed />
                           </div>
                         </div>
+
                         <span className="text-sm text-gray-500 mb-1">
                           {assignedMenu
                             ? assignedMenu.menuName
                             : "Not assigned"}
                         </span>
 
-                        {/* Show lock/edit icon for individual days */}
                         <div className="flex items-center gap-1">
                           {editableDay ? (
                             <Edit3 className="w-3 h-3 text-green-500" />
@@ -424,7 +536,7 @@ export default function AdminWeekViewCalendar() {
               + New Template
             </Button>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-6 cursor-pointer">
             {menuTemplates?.map((template) => {
               console.log(template.id);
 
@@ -459,13 +571,17 @@ export default function AdminWeekViewCalendar() {
                     )}
                   </div>
 
-                  {/* Optional Description */}
-                  <p className="text-sm text-gray-600 mb-2">
-                    {template.description}
-                  </p>
-
+                  <div className="flex gap-4 items-center">
+                    {/* Optional Description */}
+                    <p className="text-sm text-gray-600">
+                      {template.description}
+                    </p>
+                    <span className="w-fit bg-amber-100 text-slate-800 text-[8px] font-normal py-[0.1rem] px-4 rounded-md shadow-sm self-center">
+                      {template.menuType}
+                    </span>
+                  </div>
                   {/* Menu Items */}
-                  <p className="text-sm">
+                  <p className="text-sm mt-4">
                     <span className="font-medium">Items:</span>{" "}
                     {template.menuItems}
                   </p>
@@ -500,3 +616,5 @@ export default function AdminWeekViewCalendar() {
     </Layout>
   );
 }
+
+//ready to make changes

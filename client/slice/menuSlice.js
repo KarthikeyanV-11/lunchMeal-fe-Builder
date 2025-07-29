@@ -3,22 +3,30 @@
 // const menuSlice = createSlice({
 //   name: "menu",
 //   initialState: {
-//     availableTemplates: [], // template data which can the admin access for adding the available templates
-//     fetchedMenus: {}, // For actual date-specific menus
+//     availableTemplates: [],
+//     fetchedMenus: {},
 //   },
 //   reducers: {
 //     setNewTemplate(state, action) {
-//       state.availableTemplates.push(action.payload);
+//       const newTemplate = action.payload;
+
+//       // Avoid adding duplicates based on unique id
+//       const alreadyExists = state.availableTemplates.some(
+//         (template) => template.id === newTemplate.id,
+//       );
+//       if (!alreadyExists) {
+//         state.availableTemplates.push(newTemplate);
+//       }
 //     },
 //     clearSingleTemplate(state, action) {
 //       const id = action.payload;
 //       state.availableTemplates = state.availableTemplates.filter(
-//         (curr) => curr.id !== id, // assuming each template has an id
+//         (curr) => curr.id !== id,
 //       );
 //     },
 //     setFetchedMenu(state, action) {
-//       const { date, menu } = action.payload;
-//       state.fetchedMenus[date] = menu;
+//       const { key, week } = action.payload;
+//       state.fetchedMenus[key] = week;
 //     },
 //   },
 // });
@@ -34,12 +42,11 @@ const menuSlice = createSlice({
   initialState: {
     availableTemplates: [],
     fetchedMenus: {},
+    monthlyMenus: {}, // NEW: Store monthly data using "YYYY-MM" keys
   },
   reducers: {
     setNewTemplate(state, action) {
       const newTemplate = action.payload;
-
-      // Avoid adding duplicates based on unique id
       const alreadyExists = state.availableTemplates.some(
         (template) => template.id === newTemplate.id,
       );
@@ -57,9 +64,17 @@ const menuSlice = createSlice({
       const { key, week } = action.payload;
       state.fetchedMenus[key] = week;
     },
+    setMonthlyMenus(state, action) {
+      const { monthYearKey, monthData } = action.payload;
+      state.monthlyMenus[monthYearKey] = monthData;
+    },
   },
 });
 
 export default menuSlice.reducer;
-export const { setNewTemplate, clearSingleTemplate, setFetchedMenu } =
-  menuSlice.actions;
+export const {
+  setNewTemplate,
+  clearSingleTemplate,
+  setFetchedMenu,
+  setMonthlyMenus, // export this too
+} = menuSlice.actions;
