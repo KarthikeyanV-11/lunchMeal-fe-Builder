@@ -5,12 +5,11 @@
 //   initialState: {
 //     availableTemplates: [],
 //     fetchedMenus: {},
+//     monthlyMenus: {}, // NEW: Store monthly data using "YYYY-MM" keys
 //   },
 //   reducers: {
 //     setNewTemplate(state, action) {
 //       const newTemplate = action.payload;
-
-//       // Avoid adding duplicates based on unique id
 //       const alreadyExists = state.availableTemplates.some(
 //         (template) => template.id === newTemplate.id,
 //       );
@@ -28,12 +27,20 @@
 //       const { key, week } = action.payload;
 //       state.fetchedMenus[key] = week;
 //     },
+//     setMonthlyMenus(state, action) {
+//       const { monthYearKey, monthData } = action.payload;
+//       state.monthlyMenus[monthYearKey] = monthData;
+//     },
 //   },
 // });
 
 // export default menuSlice.reducer;
-// export const { setNewTemplate, clearSingleTemplate, setFetchedMenu } =
-//   menuSlice.actions;
+// export const {
+//   setNewTemplate,
+//   clearSingleTemplate,
+//   setFetchedMenu,
+//   setMonthlyMenus, // export this too
+// } = menuSlice.actions;
 
 import { createSlice } from "@reduxjs/toolkit";
 
@@ -41,8 +48,9 @@ const menuSlice = createSlice({
   name: "menu",
   initialState: {
     availableTemplates: [],
-    fetchedMenus: {},
-    monthlyMenus: {}, // NEW: Store monthly data using "YYYY-MM" keys
+    fetchedMenus: {}, // For weekly / multi-day menus, keyed by week range
+    fetchedDayMenus: {}, // New: For single day menus, keyed by date string
+    monthlyMenus: {}, // Monthly menus as before
   },
   reducers: {
     setNewTemplate(state, action) {
@@ -64,6 +72,10 @@ const menuSlice = createSlice({
       const { key, week } = action.payload;
       state.fetchedMenus[key] = week;
     },
+    setFetchedDayMenu(state, action) {
+      const { key, dayMenu } = action.payload;
+      state.fetchedDayMenus[key] = dayMenu;
+    },
     setMonthlyMenus(state, action) {
       const { monthYearKey, monthData } = action.payload;
       state.monthlyMenus[monthYearKey] = monthData;
@@ -76,5 +88,6 @@ export const {
   setNewTemplate,
   clearSingleTemplate,
   setFetchedMenu,
-  setMonthlyMenus, // export this too
+  setFetchedDayMenu, // export new action
+  setMonthlyMenus,
 } = menuSlice.actions;
