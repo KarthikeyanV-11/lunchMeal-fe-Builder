@@ -53,12 +53,17 @@ export default function AdminDashboard() {
 
     setLoading(true);
     try {
-      await axios.post("http://192.168.3.121:8080/api/v1/notifications", {
-        title,
-        message,
-        date: new Date().toISOString(),
-      });
+      const res = await axios.post(
+        "http://192.168.3.121:8080/api/v1/notifications",
+        {
+          title,
+          message,
+          createdBy: 35,
+          // date: new Date().toISOString(),
+        },
+      );
 
+      console.log(res);
       toast.success("Notification sent successfully");
       setTitle("");
       setMessage("");

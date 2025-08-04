@@ -466,13 +466,21 @@ export default function MenuDisplay() {
                 </p>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {menuItems.map((item, index) => (
                   <div
                     key={index}
-                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                    className="flex items-center justify-between p-4 bg-white rounded-xl shadow-md hover:shadow-lg transition duration-200 group"
                   >
-                    <span className="text-gray-800">• {item}</span>
+                    <div className="flex items-center space-x-3">
+                      <div className="w-2.5 h-2.5 rounded-full bg-amber-300 group-hover:bg-amber-500"></div>
+                      <span className="text-gray-700 font-medium group-hover:text-gray-900 transition">
+                        {item}
+                      </span>
+                    </div>
+                    <span className="text-sm text-gray-400 group-hover:text-amber-500">
+                      •
+                    </span>
                   </div>
                 ))}
               </div>

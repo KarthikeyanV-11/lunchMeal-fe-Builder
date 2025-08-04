@@ -14,6 +14,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { useDispatch } from "react-redux";
 import { clearUser } from "../../slice/authSlice";
+import { toast } from "react-hot-toast";
 
 const navigationConfig = {
   employee: [
@@ -63,9 +64,42 @@ export const Navigation = () => {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <div className="flex items-center">
-            <Link to="/" className="text-xl font-bold text-primary">
+            <span
+              onClick={() => {
+                toast.custom((t) => (
+                  <div className="flex items-center justify-between w-full max-w-sm p-4 bg-orange-50 border border-orange-200 rounded-lg shadow-lg animate-enter">
+                    <div className="flex flex-col">
+                      <span className="text-sm font-semibold text-orange-700">
+                        Navigate to Homepage?
+                      </span>
+                      <span className="text-xs text-orange-600 mt-1">
+                        This will take you to the landing page. Continue?
+                      </span>
+                    </div>
+                    <div className="flex items-center space-x-2 ml-4">
+                      <button
+                        onClick={() => {
+                          toast.dismiss(t.id);
+                          navigate("/");
+                        }}
+                        className="bg-orange-600 text-white text-xs px-3 py-1 rounded hover:bg-orange-700 transition"
+                      >
+                        Yes
+                      </button>
+                      <button
+                        onClick={() => toast.dismiss(t.id)}
+                        className="text-orange-600 text-xs px-3 py-1 border border-orange-300 rounded hover:bg-orange-100 transition"
+                      >
+                        No
+                      </button>
+                    </div>
+                  </div>
+                ));
+              }}
+              className="text-xl font-bold text-primary cursor-pointer"
+            >
               ICMeal
-            </Link>
+            </span>
           </div>
 
           {/* Navigation Links */}
