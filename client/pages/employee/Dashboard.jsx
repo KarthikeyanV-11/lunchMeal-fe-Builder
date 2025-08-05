@@ -9,6 +9,7 @@ import axios from "axios";
 import { setSubscriptionState } from "../../slice/authSlice";
 // import { setSubscriptions } from "../../slice/subscriptionSlice";
 import { toast } from "react-hot-toast";
+import { addFeedback } from "../../slice/menuFeedback";
 
 export default function EmployeeDashboard() {
   const BASE_URL = import.meta.env.VITE_BACKEND_URL;
@@ -20,6 +21,12 @@ export default function EmployeeDashboard() {
   // READING THE REDUX
   const user = useSelector((state) => state.auth.user);
   console.log(user);
+  const subscriptionDetails = useSelector((state) => state.auth.subscriptions);
+  const location = user?.location;
+
+  console.log(user?.id);
+  console.log(subscriptionDetails);
+  // console.log(subscriptionDetails[1].employee.id);
 
   //LOCAL STATES
   const [isActive, setIsActive] = useState(false);
@@ -40,7 +47,7 @@ export default function EmployeeDashboard() {
     const fetchSubscriptions = async () => {
       try {
         const res = await axios.get(
-          `${BASE_URL}/subscription/employee/${user.id}`,
+          `${BASE_URL}/subscription/employee/${user?.id}`,
         );
         const allSubs = res.data;
         console.log(allSubs);
@@ -120,7 +127,7 @@ export default function EmployeeDashboard() {
       const dateStr = new Date().toISOString().split("T")[0]; // e.g., 2025-07-31
 
       const res = await axios.put(
-        `${BASE_URL}/userSubscriptionDetails/hadLunch/date/${dateStr}?employeeId=${Number(user?.id) || 4}&acknowledgedById=${Number(user?.id) || 4}`,
+        `${BASE_URL}/userSubscriptionDetails/hadLunch/date/${dateStr}?employeeId=${user?.id}&acknowledgedById=${user?.id}`,
         payload,
         {
           headers: {
@@ -147,16 +154,21 @@ export default function EmployeeDashboard() {
       setFeedbackLoading(true);
 
       const payload = {
-        employee: 37,
+        employee: user?.id,
         rating: rating || null, // if empty, send null
         remarks: description || "", // if empty, send empty string
       };
+
+      console.log("Payload being sent:", payload);
 
       const res = await axios.post(`${BASE_URL}/rating`, payload);
 
       //set the state
       setSubmittedRating(res.data.rating);
       setSubmittedDescription(res.data.remarks);
+
+      //updating the feedback in the redux
+      dispatch(addFeedback({ name: user?.firstName, rating, remarks }));
 
       // Optional: Show toast or alert
       toast.success("Feedback submitted!");
@@ -173,14 +185,6 @@ export default function EmployeeDashboard() {
       setFeedbackLoading(false);
     }
   };
-
-  const [first, subscriptionDetails] = useSelector(
-    (state) => state.auth.subscriptions,
-  );
-  const location = subscriptionDetails.employee.location;
-  console.log(location);
-
-  console.log(subscriptionDetails);
 
   return (
     <Layout>
@@ -269,8 +273,8 @@ export default function EmployeeDashboard() {
             <CardContent>
               <div className="text-2xl font-bold">Chennai</div>
               <p className="text-xs text-muted-foreground">
-                {location.charAt(0).toUpperCase() +
-                  location.slice(1).toLowerCase()}{" "}
+                {location?.charAt(0).toUpperCase() +
+                  location?.slice(1).toLowerCase()}{" "}
                 Location
               </p>
             </CardContent>

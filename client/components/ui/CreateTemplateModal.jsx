@@ -28,7 +28,7 @@ function CreateTemplateModal({ isOpen, setIsOpen, onSaveTemplate }) {
     };
 
     try {
-      const res = await fetch("http://192.168.3.121:8080/api/v1/menu", {
+      const res = await fetch(`${BASE_URL}/menu`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newTemplate),

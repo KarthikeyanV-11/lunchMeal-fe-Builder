@@ -54,8 +54,10 @@ export const Navigation = () => {
   const links = navigationConfig[role];
 
   function handleLogout() {
+    logout();
     dispatch(clearUser());
     navigate("/");
+    toast.success("Logged out successfully");
   }
 
   return (

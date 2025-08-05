@@ -24,9 +24,7 @@ export const MenuProvider = ({ children }) => {
   // Fetch all available templates
   const fetchTemplates = async () => {
     try {
-      const response = await axios.get(
-        "http://192.168.3.121:8080/api/v1/menu/all",
-      );
+      const response = await axios.get(`${BASE_URL}/menu/all`);
       const templates = response.data;
 
       if (Array.isArray(templates)) {
@@ -46,7 +44,7 @@ export const MenuProvider = ({ children }) => {
   //   try {
   //     setLoading(true);
   //     const response = await axios.get(
-  //       `http://192.168.3.121:8080/api/v1/menuSchedule/${date}`,
+  //       `${BASE_URL}/menuSchedule/${date}`,
   //     );
   //     const weeklyData = response.data;
   //     const key = `${weeklyData.startDate}_to_${weeklyData.endDate}`;
@@ -99,7 +97,7 @@ export const MenuProvider = ({ children }) => {
       console.log(`📅 Fetching month schedule for ${month}/${year}...`);
 
       const response = await axios.get(
-        `http://192.168.3.121:8080/api/v1/menuSchedule/byMonthAndYear?month=${month}&year=${year}`,
+        `${BASE_URL}/menuSchedule/byMonthAndYear?month=${month}&year=${year}`,
       );
       const monthData = response.data;
       console.log("✅ Monthly menu data fetched:", monthData);
@@ -124,10 +122,7 @@ export const MenuProvider = ({ children }) => {
   // Add a new template
   const addNewTemplate = async (data) => {
     try {
-      const response = await axios.post(
-        "http://192.168.3.121:8080/api/v1/menu",
-        data,
-      );
+      const response = await axios.post(`${BASE_URL}/menu`, data);
       const result = response.data;
 
       if (result?.menuItems) {

@@ -3,7 +3,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { Users, DollarSign, Calendar, TrendingUp } from "lucide-react";
+import {
+  Users,
+  Calendar,
+  TrendingUp,
+  Star,
+  StarHalf,
+  StarOff,
+} from "lucide-react";
+
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setEmployees } from "../../slice/employeeSlice";
@@ -18,9 +26,17 @@ export default function AdminDashboard() {
   const [title, setTitle] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+
+  //READING THE FEEDBACKS SENT BY THE EMPLOYEE(USER)
+  const fb = useSelector((state) => state.feedback.feedbacks);
+  console.log(fb);
+
+  // FINDING OUT THE TOTAL STRENGTH
   const employeeStrength = useSelector(
     (state) => state.employee.allEmployees.length,
   );
+
+  //FINDING OUT THE TOTAL SUBSCRIBED EMPLOYEES
   const subscribedEmployees = useSelector(
     (state) => state.employee.subscribedEmployees.length,
   );
@@ -30,7 +46,7 @@ export default function AdminDashboard() {
     const fetchEmployees = async () => {
       try {
         const response = await axios.get(
-          "http://192.168.3.121:8080/api/v1/employee/getAllEmployees", // url for fetching all the employee details
+          `${BASE_URL}/employee/getAllEmployees`, // url for fetching all the employee details
         );
 
         const employeesArray = response.data;
@@ -45,6 +61,26 @@ export default function AdminDashboard() {
     fetchEmployees();
   }, [dispatch]);
 
+  function renderStars(rating) {
+    const stars = [];
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 >= 0.25 && rating % 1 < 0.75;
+    const totalStars = hasHalfStar ? fullStars + 1 : Math.round(rating);
+
+    for (let i = 0; i < 5; i++) {
+      if (i < fullStars) {
+        stars.push(<Star key={i} size={16} fill="orange" stroke="orange" />);
+      } else if (i === fullStars && hasHalfStar) {
+        stars.push(
+          <StarHalf key={i} size={16} fill="orange" stroke="orange" />,
+        );
+      } else {
+        stars.push(<StarOff key={i} size={16} stroke="orange" />);
+      }
+    }
+    return stars;
+  }
+
   const handleSendNotification = async () => {
     if (!title || !message) {
       toast.error("Both title and message are required");
@@ -53,18 +89,19 @@ export default function AdminDashboard() {
 
     setLoading(true);
     try {
-      const res = await axios.post(
-        "http://192.168.3.121:8080/api/v1/notifications",
-        {
-          title,
-          message,
-          createdBy: 35,
-          // date: new Date().toISOString(),
-        },
-      );
+      const res = await axios.post(`${BASE_URL}/notifications`, {
+        title,
+        message,
+        createdBy: 35,
+        // date: new Date().toISOString(),
+      });
 
       console.log(res);
       toast.success("Notification sent successfully");
+
+      //updating the redux state
+
+      //resetting
       setTitle("");
       setMessage("");
     } catch (error) {
@@ -219,39 +256,26 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              <div className="flex justify-between items-start">
-                <div>
-                  <p className="text-sm font-medium">
-                    "Great variety in this week's menu!"
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    John Doe - 2 hours ago
-                  </p>
-                </div>
-                <Badge variant="secondary">★ 5</Badge>
-              </div>
-              <div className="flex justify-between items-start">
-                <div>
-                  <p className="text-sm font-medium">
-                    "Could use more vegetarian options."
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    Jane Smith - 1 day ago
-                  </p>
-                </div>
-                <Badge variant="secondary">★ 3</Badge>
-              </div>
-              <div className="flex justify-between items-start">
-                <div>
-                  <p className="text-sm font-medium">
-                    "Food quality has improved significantly."
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    Mike Johnson - 2 days ago
-                  </p>
-                </div>
-                <Badge variant="secondary">★ 4</Badge>
-              </div>
+              {fb && fb.length > 0 ? (
+                fb.map((feedback, index) => (
+                  <div key={index} className="flex justify-between items-start">
+                    <div>
+                      <p className="text-sm font-medium">
+                        {`"${feedback.remarks}"`}
+                      </p>
+                      <p className="text-xs text-gray-500">{feedback.name}</p>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      {renderStars(feedback.rating)}
+                      <span className="ml-1 text-sm text-orange-600 font-semibold">
+                        {feedback.rating.toFixed(1)}
+                      </span>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm text-gray-500">No feedback available.</p>
+              )}
             </div>
           </CardContent>
         </Card>

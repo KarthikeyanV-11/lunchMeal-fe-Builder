@@ -4,17 +4,17 @@ import { createSlice } from "@reduxjs/toolkit";
 const feedbackSlice = createSlice({
   name: "feedback",
   initialState: {
-    items: [], // array of feedback objects
+    feedbacks: [], // array of feedback objects
   },
   reducers: {
     setFeedbacks(state, action) {
-      state.items = action.payload;
+      state.feedbacks = action.payload;
     },
     addFeedback(state, action) {
-      state.items.push(action.payload);
+      state.feedbacks.push(action.payload);
     },
     resetFeedbacks(state) {
-      state.items = [];
+      state.feedbacks = [];
     },
   },
 });

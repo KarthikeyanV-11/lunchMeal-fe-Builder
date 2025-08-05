@@ -57,38 +57,60 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle className="text-center capitalize">
-            Login as {role}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <input
-              type="text"
-              placeholder="Employee Code"
-              value={employeeCode}
-              onChange={(e) => setEmployeeCode(e.target.value)}
-              required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            {error && <p className="text-red-500 text-sm">{error}</p>}
-            <Button type="submit" className="w-full">
-              Login
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+    <div
+      className="relative min-h-screen flex items-center justify-center px-4 bg-cover bg-center bg-no-repeat"
+      style={{
+        backgroundImage: "url('/lunch-bg.jpg')",
+      }}
+    >
+      {/* Dark overlay to dim the background image */}
+      <div className="absolute inset-0 bg-black opacity-65 z-0"></div>
+
+      {/* Login Card */}
+      <div className="relative z-10 bg-white/80 backdrop-blur-md p-8 rounded-2xl shadow-2xl w-full max-w-md">
+        <Card className="bg-transparent shadow-none border-none">
+          <CardHeader>
+            <CardTitle className="text-center capitalize text-orange-600 text-2xl font-bold">
+              Login as {role}
+            </CardTitle>
+          </CardHeader>
+
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Employee Code Input */}
+              <input
+                type="text"
+                placeholder="Employee Code"
+                value={employeeCode}
+                onChange={(e) => setEmployeeCode(e.target.value)}
+                required
+                className="w-full px-4 py-2 border border-orange-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+              />
+
+              {/* Password Input */}
+              <input
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="w-full px-4 py-2 border border-orange-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+              />
+
+              {/* Error Message */}
+              {error && <p className="text-red-600 text-sm">{error}</p>}
+
+              {/* Submit Button */}
+              <Button
+                type="submit"
+                className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2 rounded-lg"
+              >
+                Login
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

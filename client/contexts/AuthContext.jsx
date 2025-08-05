@@ -56,7 +56,6 @@
 //   }
 //   return context;
 // };
-
 import { createContext, useContext, useState, useEffect } from "react";
 
 const AuthContext = createContext(undefined);
@@ -65,9 +64,8 @@ export const AuthProvider = ({ children }) => {
   const [role, setRole] = useState(null);
 
   useEffect(() => {
-    // Check localStorage for existing role on app start
     const savedRole = localStorage.getItem("role");
-    if (savedRole && ["employee", "admin", "payroll"].includes(savedRole)) {
+    if (["employee", "admin", "payroll"].includes(savedRole)) {
       setRole(savedRole);
     }
   }, []);
@@ -86,7 +84,9 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     setRole(null);
+    localStorage.removeItem("user");
     localStorage.removeItem("role");
+    // ❌ Don't navigate here
   };
 
   const isAuthenticated = role !== null;
