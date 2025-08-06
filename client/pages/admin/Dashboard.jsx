@@ -14,22 +14,43 @@ import {
 
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { setEmployees } from "../../slice/employeeSlice";
+import {
+  setEmployees,
+  setMoneyContributions,
+  setSubscribedEmployees,
+} from "../../slice/employeeSlice";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { setAllRatings, setLastThreeRatings } from "../../slice/menuFeedback";
 
 //uses employeeSlice redux.
 //backend api format: [{},{}...{}]
 
 export default function AdminDashboard() {
+  const BASE_URL = import.meta.env.VITE_BACKEND_URL;
+
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = today.getMonth();
+  console.log(month);
+
+  //LOCAL STATES
   const dispatch = useDispatch();
   const [title, setTitle] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+
+  //REDUX RELATED
+  const user = useSelector((state) => state.auth.user);
+  console.log(user);
 
   //READING THE FEEDBACKS SENT BY THE EMPLOYEE(USER)
-  const fb = useSelector((state) => state.feedback.feedbacks);
+  const fb = useSelector((state) => state.feedback.allFeedbacks);
   console.log(fb);
+
+  const lastThree = useSelector((state) => state.feedback.lastThreeRatings);
+  console.log(lastThree);
 
   // FINDING OUT THE TOTAL STRENGTH
   const employeeStrength = useSelector(
@@ -42,6 +63,16 @@ export default function AdminDashboard() {
   );
   // console.log(employeeStrength[0]);
 
+  const moneyRelated = useSelector(
+    (state) => state.employee.moneyContributions,
+  );
+  const totalContribution = moneyRelated.totalContribution;
+  console.log(moneyRelated);
+
+  const companyContribution = moneyRelated.managementContribution;
+  const employeeContribution = moneyRelated.employeeContribution;
+
+  //USE EFFECTS
   useEffect(() => {
     const fetchEmployees = async () => {
       try {
@@ -61,6 +92,52 @@ export default function AdminDashboard() {
     fetchEmployees();
   }, [dispatch]);
 
+  useEffect(() => {
+    async function fetchRatings() {
+      try {
+        const res = await axios.get(`${BASE_URL}/rating/all`);
+        const allRatingsCumFeedback = res.data;
+        const lastThree = allRatingsCumFeedback.slice(0, 3);
+        dispatch(setAllRatings(allRatingsCumFeedback));
+        dispatch(setLastThreeRatings(lastThree));
+      } catch (error) {
+        console.error(error);
+      }
+    }
+    fetchRatings();
+  }, [dispatch]);
+
+  useEffect(() => {
+    async function fetchTotalSubscribers() {
+      try {
+        const res = await axios.get(
+          `${BASE_URL}/subscription/active?month=${month + 1}&year=${year}`,
+        );
+        dispatch(setSubscribedEmployees(res.data));
+        console.log(res.data);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+    fetchTotalSubscribers();
+  }, [dispatch]);
+
+  useEffect(() => {
+    async function fetchMonthlyExpensePerEmployee() {
+      try {
+        const res = await axios.get(
+          `${BASE_URL}/payroll/monthlyExpensePerEmployee?month=${month + 1}&year=${year}`,
+        );
+        console.log(res.data);
+        dispatch(setMoneyContributions(res.data));
+      } catch (error) {
+        console.error(error);
+      }
+    }
+    fetchMonthlyExpensePerEmployee();
+  }, []);
+
+  //UTILITY FUNCTIONS
   function renderStars(rating) {
     const stars = [];
     const fullStars = Math.floor(rating);
@@ -81,6 +158,7 @@ export default function AdminDashboard() {
     return stars;
   }
 
+  //SUBMITTING EVENTS
   const handleSendNotification = async () => {
     if (!title || !message) {
       toast.error("Both title and message are required");
@@ -92,7 +170,7 @@ export default function AdminDashboard() {
       const res = await axios.post(`${BASE_URL}/notifications`, {
         title,
         message,
-        createdBy: 35,
+        createdBy: user?.id,
         // date: new Date().toISOString(),
       });
 
@@ -150,12 +228,13 @@ export default function AdminDashboard() {
               {/* <DollarSign className="h-4 w-4 text-muted-foreground" /> */}₹
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
-                ₹ {subscribedEmployees * 100}
-              </div>{" "}
+              <div className="text-2xl font-bold">₹ {totalContribution}</div>{" "}
               {/* subscribedEmployees * 100*/}
               <p className="text-xs text-muted-foreground">
-                Employee share: {subscribedEmployees * 35}
+                company share: {companyContribution}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Employee share: {employeeContribution}
               </p>
             </CardContent>
           </Card>
@@ -256,14 +335,20 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {fb && fb.length > 0 ? (
-                fb.map((feedback, index) => (
-                  <div key={index} className="flex justify-between items-start">
+              {lastThree && lastThree.length > 0 ? (
+                lastThree.map((feedback, index) => (
+                  <div
+                    key={index}
+                    className="flex justify-between items-start border-b py-2"
+                  >
                     <div>
-                      <p className="text-sm font-medium">
-                        {`"${feedback.remarks}"`}
+                      <p className="text-sm font-medium text-gray-800">
+                        {feedback.remarks}
                       </p>
-                      <p className="text-xs text-gray-500">{feedback.name}</p>
+                      <p className="text-xs text-gray-500">
+                        {feedback.employee?.firstName}{" "}
+                        {feedback.employee?.lastName}
+                      </p>
                     </div>
                     <div className="flex items-center gap-1">
                       {renderStars(feedback.rating)}
@@ -276,7 +361,56 @@ export default function AdminDashboard() {
               ) : (
                 <p className="text-sm text-gray-500">No feedback available.</p>
               )}
+
+              {/* See All Ratings Button */}
+              {fb && fb.length > 3 && (
+                <Button onClick={() => setShowModal(true)}>
+                  See All Ratings
+                </Button>
+              )}
             </div>
+
+            {/* Modal */}
+            {showModal && (
+              <div
+                className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+                onClick={() => setShowModal(false)}
+              >
+                <div
+                  className="bg-white rounded-lg p-6 max-w-lg w-full shadow-lg"
+                  onClick={(e) => e.stopPropagation()} // prevent modal close when clicking inside
+                >
+                  <h2 className="text-lg font-bold mb-4">All Ratings</h2>
+                  <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
+                    {fb.map((feedback, index) => (
+                      <div
+                        key={index}
+                        className="flex justify-between items-start border-b py-2"
+                      >
+                        <div>
+                          <p className="text-sm font-medium text-gray-800">
+                            {feedback.remarks}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {feedback.employee?.firstName}{" "}
+                            {feedback.employee?.lastName}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          {renderStars(feedback.rating)}
+                          <span className="ml-1 text-sm text-orange-600 font-semibold">
+                            {feedback.rating}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-4 text-right">
+                    <Button onClick={() => setShowModal(false)}>Close</Button>
+                  </div>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

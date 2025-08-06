@@ -21,15 +21,15 @@ const navigationConfig = {
     { href: "/employee", label: "Dashboard", icon: Home },
     { href: "/employee/calendar", label: "Calendar", icon: Calendar },
     { href: "/employee/subscription", label: "Subscription", icon: FileText },
-    { href: "/employee/notifications", label: "Notifications", icon: Bell },
+    // { href: "/employee/notifications", label: "Notifications", icon: Bell },
   ],
   admin: [
     { href: "/admin", label: "Dashboard", icon: Home },
     { href: "/admin/calendar", label: "Calendar", icon: Calendar },
-    { href: "/admin/employees", label: "Employee Mgmt", icon: Users },
     { href: "/admin/menu-upload", label: "Menu Upload", icon: Upload },
+    { href: "/admin/employees", label: "Employee Mgmt", icon: Users },
     { href: "/admin/reports", label: "Reports", icon: BarChart },
-    { href: "/admin/notifications", label: "Notifications", icon: Bell },
+    // { href: "/admin/notifications", label: "Notifications", icon: Bell },
   ],
   payroll: [
     { href: "/payroll", label: "Dashboard", icon: Home },
@@ -51,7 +51,8 @@ export const Navigation = () => {
 
   if (!role) return null;
 
-  const links = navigationConfig[role];
+  // const links = navigationConfig[role];
+  const links = navigationConfig[role] || [];
 
   function handleLogout() {
     logout();

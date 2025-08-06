@@ -226,7 +226,11 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function EmployeeCalendar() {
-  const [currentDate, setCurrentDate] = useState(new Date());
+  // const [currentDate, setCurrentDate] = useState(new Date());
+  const [currentDate, setCurrentDate] = useState(() => {
+    const saved = sessionStorage.getItem("selectedCalendarDate");
+    return saved ? new Date(saved) : new Date();
+  });
   const navigate = useNavigate();
   const { role } = useAuth();
 
@@ -286,18 +290,34 @@ export default function EmployeeCalendar() {
     return date.getDay() === 0 || date.getDay() === 6;
   };
 
-  const handleDateClick = (day) => {
-    if (isWeekend(day)) return; // Only block weekends
+  // const handleDateClick = (day) => {
+  //   if (isWeekend(day)) return; // Only block weekends
 
-    const selectedDate = formatDateForRoute(day);
-    navigate(`/menu/${role}/${selectedDate}`);
+  //   const selectedDate = formatDateForRoute(day);
+  //   navigate(`/menu/${role}/${selectedDate}`);
+  // };
+
+  const handleDateClick = (day) => {
+    const selectedDate = new Date(currentYear, currentMonth, day);
+    const formattedDate = formatDateForRoute(day);
+
+    // ✅ Save to sessionStorage
+    sessionStorage.setItem("selectedCalendarDate", selectedDate.toISOString());
+
+    navigate(`/menu/${role}/${formattedDate}`);
   };
 
   const renderCalendarDays = () => {
     const days = [];
 
     for (let i = 0; i < firstDayOfWeek; i++) {
-      days.push(<div key={`empty-${i}`} className="h-12 w-12"></div>);
+      // days.push(<div key={`empty-${i}`} className="h-12 w-12"></div>);
+      days.push(
+        <div
+          key={`empty-${i}`}
+          className="w-12 aspect-square flex items-center justify-center"
+        ></div>,
+      );
     }
 
     for (let day = 1; day <= daysInMonth; day++) {
@@ -305,15 +325,20 @@ export default function EmployeeCalendar() {
       const isTodayDate = isToday(day);
       const isWeekendDate = isWeekend(day);
 
+      // let dayClasses = [
+      //   "h-12 w-12 flex items-center justify-center text-sm rounded-lg transition-all duration-200",
+      //   "border border-transparent",
+      // ];
       let dayClasses = [
-        "h-12 w-12 flex items-center justify-center text-sm rounded-lg transition-all duration-200",
-        "border border-transparent",
+        "w-12 h-12 flex items-center justify-center aspect-square text-sm text-center leading-none rounded-lg transition-all duration-200",
+        "border border-transparent font-normal",
       ];
 
       if (isWeekendDate) {
         dayClasses.push("text-gray-400 bg-gray-50 cursor-not-allowed");
       } else if (isTodayDate) {
         dayClasses.push(
+          // "border-blue-500 bg-blue-50 text-blue-700 font-semibold",
           "border-blue-500 bg-blue-50 text-blue-700 font-semibold",
         );
       } else if (isPast) {
@@ -398,7 +423,10 @@ export default function EmployeeCalendar() {
             </div>
 
             {/* Calendar Grid */}
-            <div className="grid grid-cols-7 gap-2 mb-6">
+            {/* <div className="grid grid-cols-7 gap-2 mb-6">
+              {renderCalendarDays()}
+            </div> */}
+            <div className="grid grid-cols-7 gap-1 justify-items-center">
               {renderCalendarDays()}
             </div>
 

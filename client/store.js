@@ -12,7 +12,7 @@ const store = configureStore({
     employee: employeeReducer,
     menu: menuReducer,
     subscription: subscriptionReducer,
-    Notification: adminNotificationReducer,
+    notification: adminNotificationReducer,
     feedback: feedbackReducer,
   },
 });

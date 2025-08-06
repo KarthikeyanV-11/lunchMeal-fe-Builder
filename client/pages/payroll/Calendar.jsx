@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Layout } from "@/components/shared/Layout";
 import { Button } from "@/components/ui/button";
@@ -10,9 +10,31 @@ import {
   Eye,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLocation } from "react-router-dom";
 
 export default function PayrollCalendar() {
-  const [currentDate, setCurrentDate] = useState(new Date());
+  // const [currentDate, setCurrentDate] = useState(new Date());
+  const location = useLocation();
+
+  // Initialize currentDate from location.state or fallback to today
+  const [currentDate, setCurrentDate] = useState(() => {
+    const saved = sessionStorage.getItem("selectedCalendarDate");
+    return saved ? new Date(saved) : new Date();
+  });
+
+  // 👇 Clears the state after using it once
+  // useEffect(() => {
+  //   if (location.state?.selectedDate) {
+  //     window.history.replaceState({}, document.title);
+  //   }
+  // }, []);
+  // useEffect(() => {
+  //   const saved = sessionStorage.getItem("selectedCalendarDate");
+  //   if (saved) {
+  //     sessionStorage.removeItem("selectedCalendarDate");
+  //   }
+  // }, []);
+
   const navigate = useNavigate();
   const { role } = useAuth();
 
@@ -72,9 +94,28 @@ export default function PayrollCalendar() {
     return date.getDay() === 0 || date.getDay() === 6;
   };
 
+  // const handleDateClick = (day) => {
+  //   const selectedDate = formatDateForRoute(day);
+  //   navigate(`/menu/${role}/${selectedDate}`);
+  // };
+
+  // const handleDateClick = (day) => {
+  //   const selectedDate = new Date(currentYear, currentMonth, day);
+  //   const formattedDate = formatDateForRoute(day);
+
+  //   navigate(`/menu/${role}/${formattedDate}`, {
+  //     state: { selectedDate: selectedDate.toISOString() },
+  //   });
+  // };
+
   const handleDateClick = (day) => {
-    const selectedDate = formatDateForRoute(day);
-    navigate(`/menu/${role}/${selectedDate}`);
+    const selectedDate = new Date(currentYear, currentMonth, day);
+    const formattedDate = formatDateForRoute(day);
+
+    // ✅ Save to sessionStorage
+    sessionStorage.setItem("selectedCalendarDate", selectedDate.toISOString());
+
+    navigate(`/menu/${role}/${formattedDate}`);
   };
 
   const renderCalendarDays = () => {
@@ -82,7 +123,13 @@ export default function PayrollCalendar() {
 
     // Add empty cells for days before the first day of the month
     for (let i = 0; i < firstDayOfWeek; i++) {
-      days.push(<div key={`empty-${i}`} className="h-12 w-12"></div>);
+      // days.push(<div key={`empty-${i}`} className="h-12 w-12"></div>);
+      days.push(
+        <div
+          key={`empty-${i}`}
+          className="w-12 aspect-square flex items-center justify-center"
+        ></div>,
+      );
     }
 
     // Add days of the month
@@ -91,9 +138,13 @@ export default function PayrollCalendar() {
       const isTodayDate = isToday(day);
       const isWeekendDate = isWeekend(day);
 
+      // let dayClasses = [
+      //   "h-12 w-12 flex items-center justify-center text-sm rounded-lg transition-all duration-200",
+      //   "border border-transparent cursor-pointer",
+      // ];
       let dayClasses = [
-        "h-12 w-12 flex items-center justify-center text-sm rounded-lg transition-all duration-200",
-        "border border-transparent cursor-pointer",
+        "w-12 h-12 flex items-center justify-center aspect-square text-sm text-center leading-none rounded-lg transition-all duration-200",
+        "border border-transparent font-normal",
       ];
 
       if (isPast) {
@@ -181,7 +232,10 @@ export default function PayrollCalendar() {
             </div>
 
             {/* Calendar Grid */}
-            <div className="grid grid-cols-7 gap-2 mb-6">
+            {/* <div className="grid grid-cols-7 gap-2 mb-6">
+              {renderCalendarDays()}
+            </div> */}
+            <div className="grid grid-cols-7 gap-1 justify-items-center">
               {renderCalendarDays()}
             </div>
 

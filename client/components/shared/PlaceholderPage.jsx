@@ -4,7 +4,7 @@ import { Construction } from "lucide-react";
 
 export const PlaceholderPage = ({
   title,
-  description = "This page is under development. Continue prompting to add content here.",
+  description = "This page is under development.",
 }) => {
   return (
     <Layout>
@@ -20,10 +20,10 @@ export const PlaceholderPage = ({
           </CardHeader>
           <CardContent>
             <p className="text-gray-600 mb-4">{description}</p>
-            <p className="text-sm text-gray-500">
+            {/* <p className="text-sm text-gray-500">
               Ask the assistant to implement specific functionality for this
               page.
-            </p>
+            </p> */}
           </CardContent>
         </Card>
       </div>

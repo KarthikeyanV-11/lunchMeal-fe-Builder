@@ -1,10 +1,23 @@
 import { createSlice } from "@reduxjs/toolkit";
 
-const initialState = {};
-const AdminNotificationSlice = createSlice({
+const initialState = {
+  allNotifications: [],
+  lastThree: [],
+};
+
+const adminNotificationSlice = createSlice({
   name: "notifications",
   initialState,
-  reducers: {},
+  reducers: {
+    setAllNotifications: (state, action) => {
+      state.allNotifications = action.payload;
+    },
+    setLastThreeNotifications: (state, action) => {
+      state.lastThree = action.payload;
+    },
+  },
 });
 
-export default AdminNotificationSlice.reducer;
+export const { setAllNotifications, setLastThreeNotifications } =
+  adminNotificationSlice.actions;
+export default adminNotificationSlice.reducer;

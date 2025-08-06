@@ -9,24 +9,18 @@ import axios from "axios";
 import { setSubscriptionState } from "../../slice/authSlice";
 // import { setSubscriptions } from "../../slice/subscriptionSlice";
 import { toast } from "react-hot-toast";
-import { addFeedback } from "../../slice/menuFeedback";
+// import { addFeedback } from "../../slice/menuFeedback";
+import {
+  setAllNotifications,
+  setLastThreeNotifications,
+} from "../../slice/adminNotification";
+import {
+  setMoneyContributions,
+  setWorkingDaysStats,
+} from "../../slice/employeeSlice";
 
 export default function EmployeeDashboard() {
   const BASE_URL = import.meta.env.VITE_BACKEND_URL;
-
-  const dispatch = useDispatch();
-  const storedSub = useSelector((state) => state.auth.subscriptions);
-  console.log(storedSub);
-
-  // READING THE REDUX
-  const user = useSelector((state) => state.auth.user);
-  console.log(user);
-  const subscriptionDetails = useSelector((state) => state.auth.subscriptions);
-  const location = user?.location;
-
-  console.log(user?.id);
-  console.log(subscriptionDetails);
-  // console.log(subscriptionDetails[1].employee.id);
 
   //LOCAL STATES
   const [isActive, setIsActive] = useState(false);
@@ -38,11 +32,42 @@ export default function EmployeeDashboard() {
 
   const today = new Date();
   const year = today.getFullYear();
+  const month = today.getMonth();
   const monthName = today.toLocaleString("default", { month: "long" });
 
   const [submittedRating, setSubmittedRating] = useState("");
   const [submittedDescription, setSubmittedDescription] = useState("");
 
+  const [showModal, setShowModal] = useState(false);
+
+  // Get last 3 notifications
+
+  //REDUX RELATED
+  // READING THE REDUX
+  const user = useSelector((state) => state.auth.user);
+  const subscriptionDetails = useSelector((state) => state.auth.subscriptions);
+  const location = user?.location;
+  const allNotifications = useSelector(
+    (state) => state.notification.allNotifications, //the name as in the store
+  );
+  const lastThree = useSelector((state) => state.notification.lastThree);
+
+  const dispatch = useDispatch();
+  const storedSub = useSelector((state) => state.auth.subscriptions);
+
+  const DaysRelated = useSelector((state) => state.employee.workingDaysStats);
+  const workingDays = DaysRelated.workingDays;
+  const remainingDays = DaysRelated.remainingWorkingDays;
+
+  const moneyContributions = useSelector(
+    (state) => state.employee.moneyContributions,
+  );
+
+  const employeeContribution = moneyContributions.employeeContribution;
+  const managementContribution = moneyContributions.managementContribution;
+  const totalContribution = moneyContributions.totalContribution;
+
+  //USE EFFECTS
   useEffect(() => {
     const fetchSubscriptions = async () => {
       try {
@@ -52,7 +77,7 @@ export default function EmployeeDashboard() {
         const allSubs = res.data;
         console.log(allSubs);
         // Dispatch to Redux store
-        dispatch(setSubscriptionState(allSubs));
+        dispatch(setAllNotifications);
 
         const today = new Date();
         const year = today.getFullYear();
@@ -79,6 +104,67 @@ export default function EmployeeDashboard() {
     fetchSubscriptions();
   }, []);
 
+  useEffect(() => {
+    async function handleFetchingNotifications() {
+      try {
+        const res = await axios.get(`${BASE_URL}/notifications/all`);
+        console.log(res.data);
+        const allNotifications = res.data;
+        // dispatching to the redux
+        dispatch(setAllNotifications(allNotifications));
+      } catch (error) {
+        console.error(error);
+      }
+    }
+    handleFetchingNotifications();
+  }, []); // on mount
+
+  useEffect(() => {
+    async function handleFetchingNotifications() {
+      try {
+        const res = await axios.get(`${BASE_URL}/notifications/lastThree`);
+        console.log("LAST THREE", res.data);
+        const lastThree = res.data;
+        // dispatching to the redux
+        dispatch(setLastThreeNotifications(lastThree));
+      } catch (error) {
+        console.error(error);
+      }
+    }
+    handleFetchingNotifications();
+  }, []); // on mount
+
+  useEffect(() => {
+    async function fetchWorkingDays() {
+      try {
+        const res = await axios.get(
+          `${BASE_URL}/getWorkingDaysDetails?year=${year}&month=${month + 1}`,
+        );
+        console.log(res.data);
+        dispatch(setWorkingDaysStats(res.data));
+      } catch (error) {
+        console.error(error);
+      }
+    }
+    fetchWorkingDays();
+  }, []);
+
+  useEffect(() => {
+    async function fetchMonthlyExpensePerEmployee() {
+      try {
+        const res = await axios.get(
+          `${BASE_URL}/payroll/monthlyExpensePerEmployee?month=${month + 1}&year=${year}`,
+        );
+        console.log(res.data);
+        dispatch(setMoneyContributions(res.data));
+      } catch (error) {
+        console.error(error);
+      }
+    }
+    fetchMonthlyExpensePerEmployee();
+  }, []);
+
+  //HANDLING SUBMITTING EVENTS
   // const handleSubmit = async () => {
   //   try {
   //     setFeedbackLoading(true);
@@ -139,7 +225,6 @@ export default function EmployeeDashboard() {
       toast.success("Lunch marked successfully!");
       setRating("");
       setDescription("");
-      console.log(res.data);
     } catch (error) {
       console.error("Marking lunch failed:", error);
       const message = error.response?.data?.message || "Something went wrong!";
@@ -168,7 +253,7 @@ export default function EmployeeDashboard() {
       setSubmittedDescription(res.data.remarks);
 
       //updating the feedback in the redux
-      dispatch(addFeedback({ name: user?.firstName, rating, remarks }));
+      // dispatch(addFeedback({ name: user?.firstName, rating, remarks }));
 
       // Optional: Show toast or alert
       toast.success("Feedback submitted!");
@@ -176,15 +261,24 @@ export default function EmployeeDashboard() {
       setDescription("");
       console.log(res);
     } catch (error) {
-      // toast.error(error.data.message);
-      console.log(error);
-      console.log(error.response.data);
       console.log(error.response.data.message);
       toast.error(error.response.data.message);
     } finally {
       setFeedbackLoading(false);
     }
   };
+
+  //UTILITY FUNCTIONS
+  function formatDate(dateStr) {
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 0) return "Today";
+    if (diffDays === 1) return "1 day ago";
+    return `${diffDays} days ago`;
+  }
 
   return (
     <Layout>
@@ -255,12 +349,12 @@ export default function EmployeeDashboard() {
               <CreditCard className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">₹ {0 * 100}</div>
+              <div className="text-2xl font-bold">₹ {totalContribution}</div>
               <p className="text-xs text-muted-foreground">
-                Company share: ₹ {0 * 65}
+                Company share: ₹ {managementContribution}
               </p>
               <p className="text-xs text-muted-foreground font-bold">
-                Employee share: ₹ {0 * 35}
+                Employee share: ₹ {employeeContribution}
               </p>
             </CardContent>
           </Card>
@@ -288,7 +382,7 @@ export default function EmployeeDashboard() {
               <Calendar className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{0}</div>
+              <div className="text-2xl font-bold">{remainingDays}</div>
               <p className="text-xs text-muted-foreground">Working days left</p>
             </CardContent>
           </Card>
@@ -374,26 +468,89 @@ export default function EmployeeDashboard() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
-                <Bell className="h-5 w-5" />
+                <Bell className="h-5 w-5 text-orange-500" />
                 <span>Recent Notifications</span>
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
-                <div className="text-sm">
-                  <p className="font-medium">Menu updated for next week</p>
-                  <p className="text-gray-500">2 hours ago</p>
-                </div>
-                <div className="text-sm">
-                  <p className="font-medium">Subscription renewal reminder</p>
-                  <p className="text-gray-500">1 day ago</p>
-                </div>
-                <div className="text-sm">
-                  <p className="font-medium">New lunch vendor onboarded</p>
-                  <p className="text-gray-500">3 days ago</p>
-                </div>
+              <div className="space-y-4">
+                {lastThree.map((notification) => (
+                  <div
+                    key={notification.id}
+                    className="relative p-5 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-300"
+                  >
+                    <p className="absolute top-3 right-4 text-xs text-gray-400">
+                      {new Date(notification.date).toLocaleDateString("en-GB", {
+                        day: "numeric",
+                        month: "short",
+                        year: "numeric",
+                      })}
+                    </p>
+                    <p className="text-base font-semibold text-gray-900">
+                      {notification.title}
+                    </p>
+                    <p className="text-sm text-gray-600 mt-1">
+                      {notification.message}
+                    </p>
+                  </div>
+                ))}
+
+                {/* SEE ALL BUTTON */}
+                <Button onClick={() => setShowModal(true)}>
+                  See all notifications
+                </Button>
               </div>
             </CardContent>
+
+            {/* MODAL */}
+            {showModal && (
+              <div
+                className="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm z-50 flex items-center justify-center"
+                onClick={() => setShowModal(false)} // 🔹 Clicking backdrop closes modal
+              >
+                <div
+                  className="bg-white w-full max-w-xl rounded-xl p-6 relative shadow-lg"
+                  onClick={(e) => e.stopPropagation()} // 🔹 Prevent closing when clicking inside
+                >
+                  <button
+                    onClick={() => setShowModal(false)}
+                    className="absolute top-3 right-4 text-gray-500 hover:text-gray-800 text-lg"
+                  >
+                    &times;
+                  </button>
+
+                  <h2 className="text-xl font-bold mb-4 text-gray-800">
+                    All Notifications
+                  </h2>
+
+                  <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
+                    {allNotifications.map((notification) => (
+                      <div
+                        key={notification.id}
+                        className="relative p-4 rounded-xl border border-gray-200 shadow-sm"
+                      >
+                        <p className="absolute top-3 right-4 text-xs text-gray-400">
+                          {new Date(notification.date).toLocaleDateString(
+                            "en-GB",
+                            {
+                              day: "numeric",
+                              month: "short",
+                              year: "numeric",
+                            },
+                          )}
+                        </p>
+                        <p className="text-base font-semibold text-gray-900">
+                          {notification.title}
+                        </p>
+                        <p className="text-sm text-gray-600 mt-1">
+                          {notification.message}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
           </Card>
         </div>
       </div>

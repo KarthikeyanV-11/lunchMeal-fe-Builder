@@ -352,7 +352,7 @@ export default function AdminWeekViewCalendar() {
         {/* Header with Month Navigation */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <div className="w-6 h-6 rounded flex items-center justify-center">
+            <div className="w-6 h-6 rounded text-orange-400 flex items-center justify-center">
               <div>
                 <CalendarDays />
               </div>
@@ -527,7 +527,7 @@ export default function AdminWeekViewCalendar() {
         </div>
 
         {/* Menu Templates Section */}
-        <div className="mt-10 border rounded-xl p-4 shadow-sm hover:shadow-md transition">
+        {/* <div className="mt-10 border rounded-xl p-4 shadow-sm hover:shadow-md transition">
           <div className="flex justify-between">
             <h2 className="text-xl font-semibold mb-4">
               Available Menu Templates
@@ -548,7 +548,7 @@ export default function AdminWeekViewCalendar() {
                   key={template.id}
                   className="bg-white rounded-lg p-4 border border-gray-200 hover:shadow-md transition-shadow duration-200 ease-in-out flex flex-col text-gray-800 overflow-hidden"
                 >
-                  {/* Top Section: Name and Emoji */}
+
                   <div className="flex items-center justify-between mb-3">
                     <h3 className="text-xl font-semibold flex-grow pr-2 break-words">
                       {template.menuName}
@@ -573,7 +573,7 @@ export default function AdminWeekViewCalendar() {
                   </div>
 
                   <div className="flex gap-4 items-center">
-                    {/* Optional Description */}
+                  
                     <p className="text-sm text-gray-600">
                       {template.description}
                     </p>
@@ -581,7 +581,7 @@ export default function AdminWeekViewCalendar() {
                       {template.menuType}
                     </span>
                   </div>
-                  {/* Menu Items */}
+              
                   <p className="text-sm mt-4">
                     <span className="font-medium">Items:</span>{" "}
                     {template.menuItems}
@@ -590,7 +590,7 @@ export default function AdminWeekViewCalendar() {
               );
             })}
           </div>
-        </div>
+        </div> */}
 
         {/* Modals */}
         {/* Week Menu Assignment Modal */}
@@ -605,13 +605,13 @@ export default function AdminWeekViewCalendar() {
         )}
 
         {/* Create New Template Modal */}
-        {isCreateTemplateModalOpen && (
+        {/* {isCreateTemplateModalOpen && (
           <CreateTemplateModal
             isOpen={isCreateTemplateModalOpen}
             setIsOpen={setIsCreateTemplateModalOpen}
             onSaveTemplate={handleCreateNewTemplate}
           />
-        )}
+        )} */}
       </div>
     </Layout>
   );

@@ -11,13 +11,66 @@ import axios from "axios";
 export default function Login() {
   const BASE_URL = import.meta.env.VITE_BACKEND_URL;
   const dispatch = useDispatch();
-  const { role } = useParams();
+  const { role: routeRole } = useParams();
   const navigate = useNavigate();
   const { login } = useAuth();
 
   const [employeeCode, setEmployeeCode] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+
+  //HELPER FUNCTION
+  const getFrontendRole = (backendRole) => {
+    if (backendRole === "USER") return "employee";
+    return backendRole.toLowerCase(); // admin/payroll/etc.
+  };
+
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   setError("");
+
+  //   try {
+  //     const res = await axios.post(
+  //       `${BASE_URL}/login`,
+  //       {
+  //         employeeCode,
+  //         password,
+  //       },
+  //       {
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //         },
+  //       },
+  //     );
+
+  //     const data = res.data;
+  //     console.log(role);
+  //     console.log(data.role);
+
+  //     if (role === "employee") {
+  //       role = "USER";
+  //     }
+
+  //     if (res.status === 200 && data && data.role) {
+  //       if (data.role !== role) {
+  //         setError("Unauthorized: Please log in from the correct portal.");
+  //         localStorage.removeItem("user");
+  //         return;
+  //       }
+
+  //       localStorage.setItem("user", JSON.stringify(data));
+  //       login({ ...data });
+  //       dispatch(setUser(data));
+
+  //       navigate(`/${data.role}`); // ✅ Use actual role, not URL param
+  //     } else {
+  //       setError("Invalid credentials");
+  //     }
+  //   } catch (err) {
+  //     console.error("Login error:", err);
+  //     setError("Server error. Please try again later.");
+  //   }
+  // };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -26,28 +79,28 @@ export default function Login() {
     try {
       const res = await axios.post(
         `${BASE_URL}/login`,
-        {
-          employeeCode,
-          password,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        },
+        { employeeCode, password },
+        { headers: { "Content-Type": "application/json" } },
       );
 
       const data = res.data;
 
       if (res.status === 200 && data && data.role) {
-        localStorage.setItem("user", JSON.stringify(data)); // <-- Save to localStorage
+        const mappedRole = getFrontendRole(data.role);
 
-        login({ ...data }); // Context (optional)
-        dispatch(setUser(data)); // Redux
+        // Enforce portal-role match
+        if (routeRole !== mappedRole) {
+          setError("Unauthorized: Please log in from the correct portal.");
+          localStorage.removeItem("user");
+          return;
+        }
 
-        navigate(`/${role}`);
+        localStorage.setItem("user", JSON.stringify(data));
+        login({ ...data });
+        dispatch(setUser(data));
+
+        navigate(`/${mappedRole}`); // Navigate to correct dashboard
       } else {
-        console.log("Login failed response:", data);
         setError("Invalid credentials");
       }
     } catch (err) {
@@ -71,7 +124,7 @@ export default function Login() {
         <Card className="bg-transparent shadow-none border-none">
           <CardHeader>
             <CardTitle className="text-center capitalize text-orange-600 text-2xl font-bold">
-              Login as {role}
+              Login as {routeRole}
             </CardTitle>
           </CardHeader>
 

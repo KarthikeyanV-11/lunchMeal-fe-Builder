@@ -337,6 +337,7 @@ export default function MenuDisplay() {
   const [menuItems, setMenuItems] = useState([]);
 
   const date = new Date(selectedDate);
+
   const formattedDate = date.toLocaleDateString("en-GB");
   const today = new Date();
   // Normalize today's date for comparisons (strip time)
@@ -387,8 +388,18 @@ export default function MenuDisplay() {
     });
   };
 
+  // const handleGoBack = () => {
+  //   // navigate(`/${userRole}/calendar`);
+  //   navigate(`/${userRole}/calendar`, {
+  //     state: { selectedDate: selectedDate }, // Pass it back!
+  //   });
+  // };
+
   const handleGoBack = () => {
-    navigate(`/${userRole}/calendar`);
+    const selectedDateObj = new Date(selectedDate); // convert to Date
+    navigate(`/${userRole}/calendar`, {
+      state: { selectedDate: selectedDateObj.toISOString() }, // pass ISO string
+    });
   };
 
   if (isWeekend) {

@@ -1,85 +1,25 @@
-// // src/contexts/AuthContext.jsx
-// import { createContext, useContext, useState, useEffect } from "react";
-
-// const AuthContext = createContext(undefined);
-
-// export const AuthProvider = ({ children }) => {
-//   const [user, setUser] = useState(null);
-//   const [role, setRole] = useState(null);
-
-//   useEffect(() => {
-//     // Load user from localStorage when app starts
-//     const storedUser = localStorage.getItem("user");
-//     if (storedUser) {
-//       try {
-//         const parsedUser = JSON.parse(storedUser);
-//         if (
-//           parsedUser.role &&
-//           ["employee", "admin", "payroll"].includes(parsedUser.role)
-//         ) {
-//           setUser(parsedUser);
-//           setRole(parsedUser.role);
-//         }
-//       } catch (error) {
-//         console.error("Failed to parse user from localStorage:", error);
-//       }
-//     }
-//   }, []);
-
-//   const login = (userData) => {
-//     setUser(userData);
-//     setRole(userData.role);
-//     localStorage.setItem("user", JSON.stringify(userData));
-//   };
-
-//   const logout = () => {
-//     setUser(null);
-//     setRole(null);
-//     localStorage.removeItem("user");
-//   };
-
-//   const isAuthenticated = user !== null;
-
-//   return (
-//     <AuthContext.Provider
-//       value={{ user, role, login, logout, isAuthenticated }}
-//     >
-//       {children}
-//     </AuthContext.Provider>
-//   );
-// };
-
-// export const useAuth = () => {
-//   const context = useContext(AuthContext);
-//   if (context === undefined) {
-//     throw new Error("useAuth must be used within an AuthProvider");
-//   }
-//   return context;
-// };
 import { createContext, useContext, useState, useEffect } from "react";
 
 const AuthContext = createContext(undefined);
 
 export const AuthProvider = ({ children }) => {
   const [role, setRole] = useState(null);
+  const [loading, setLoading] = useState(true); // NEW
 
   useEffect(() => {
     const savedRole = localStorage.getItem("role");
     if (["employee", "admin", "payroll"].includes(savedRole)) {
       setRole(savedRole);
     }
+    setLoading(false); // mark as loaded
   }, []);
 
   const login = (userData) => {
-    setRole(
-      userData.role === "USER" ? "employee" : userData.role.toLowerCase(),
-    );
+    const roleValue =
+      userData.role === "USER" ? "employee" : userData.role.toLowerCase();
+    setRole(roleValue);
     localStorage.setItem("user", JSON.stringify(userData));
-    localStorage.setItem(
-      "role",
-      userData.role === "USER" ? "employee" : userData.role.toLowerCase(),
-    );
-    console.log(userData);
+    localStorage.setItem("role", roleValue);
   };
 
   const logout = () => {
@@ -92,7 +32,9 @@ export const AuthProvider = ({ children }) => {
   const isAuthenticated = role !== null;
 
   return (
-    <AuthContext.Provider value={{ role, login, logout, isAuthenticated }}>
+    <AuthContext.Provider
+      value={{ role, login, logout, isAuthenticated, loading }}
+    >
       {children}
     </AuthContext.Provider>
   );

@@ -4,22 +4,19 @@ import { createSlice } from "@reduxjs/toolkit";
 const feedbackSlice = createSlice({
   name: "feedback",
   initialState: {
-    feedbacks: [], // array of feedback objects
+    allFeedbacks: [], // array of feedback objects
+    lastThreeRatings: [],
   },
   reducers: {
-    setFeedbacks(state, action) {
-      state.feedbacks = action.payload;
+    setAllRatings: (state, action) => {
+      state.allFeedbacks = action.payload;
     },
-    addFeedback(state, action) {
-      state.feedbacks.push(action.payload);
-    },
-    resetFeedbacks(state) {
-      state.feedbacks = [];
+    setLastThreeRatings: (state, action) => {
+      state.lastThreeRatings = action.payload;
     },
   },
 });
 
-export const { setFeedbacks, addFeedback, resetFeedbacks } =
-  feedbackSlice.actions;
+export const { setAllRatings, setLastThreeRatings } = feedbackSlice.actions;
 
 export default feedbackSlice.reducer;
