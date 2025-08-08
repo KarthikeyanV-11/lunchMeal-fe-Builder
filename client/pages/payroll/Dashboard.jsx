@@ -2,15 +2,16 @@ import { Layout } from "@/components/shared/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Download, CheckCircle, AlertCircle } from "lucide-react";
+import { Download, CheckCircle, AlertCircle, CreditCard } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   setEmployees,
   setMoneyContributions,
   setSubscribedEmployees,
+  setTotalMonthlyContributions,
   setWorkingDaysStats,
 } from "../../slice/employeeSlice";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 
 export default function PayrollDashboard() {
@@ -29,67 +30,51 @@ export default function PayrollDashboard() {
   const workingDays = DaysRelated.workingDays;
   const remainingDays = DaysRelated.remainingWorkingDays;
 
-  const moneyContributions = useSelector(
-    (state) => state.employee.moneyContributions,
+  // ✅ Total contributions
+  const totalMoneyContributions = useSelector(
+    (state) => state.employee.monthlyContributions,
   );
-  const employeeContribution = moneyContributions.employeeContribution;
-  const managementContribution = moneyContributions.managementContribution;
-  const totalContribution = moneyContributions.totalContribution;
+  console.log(totalMoneyContributions);
 
   // FINDING OUT THE TOTAL STRENGTH
   const employeeStrength = useSelector(
     (state) => state.employee.allEmployees.length,
   );
 
-  //FINDING OUT THE TOTAL SUBSCRIBED EMPLOYEES
+  // FINDING OUT THE TOTAL SUBSCRIBED EMPLOYEES
   const subscribersStrength = useSelector(
     (state) => state.employee.subscribedEmployees.length,
   );
 
-  const percentOfsubscribedEmployeesFromTotal =
-    employeeStrength > 0
-      ? +((subscribersStrength / employeeStrength) * 100).toFixed(2)
-      : 0;
-  console.log(
-    employeeStrength,
-    subscribersStrength,
-    percentOfsubscribedEmployeesFromTotal,
-  );
-
-  // ✅ Total contributions for all subscribed employees
-  const totalEmployeeContribution = subscribersStrength * employeeContribution;
-  const totalManagementContribution =
-    subscribersStrength * managementContribution;
-  const totalCombinedContribution = subscribersStrength * totalContribution;
-
-  // ✅ Average daily contributions
-  const averageDailyEmployeeCost =
-    workingDays > 0 ? (totalEmployeeContribution / workingDays).toFixed(2) : 0;
-
-  const averageDailyManagementCost =
-    workingDays > 0
-      ? (totalManagementContribution / workingDays).toFixed(2)
-      : 0;
-
-  const averageDailyTotalCost =
-    workingDays > 0 ? (totalCombinedContribution / workingDays).toFixed(2) : 0;
+  //percentOfsubscribedEmployeesFromTotal
+  const [percentage, setPecentage] = useState(0);
+  useEffect(() => {
+    async function fetchpercentOfsubscribedEmployees() {
+      const res = await axios(
+        `${BASE_URL}/subscription/subscriptionPercentage`,
+      );
+      const percentage = res.data.percentage;
+      setPecentage(percentage);
+    }
+    fetchpercentOfsubscribedEmployees();
+  }, []);
 
   //USE EFFECTS
 
   //monthly expense
   useEffect(() => {
-    async function fetchMonthlyExpensePerEmployee() {
+    async function fetchMonthlyExpense() {
       try {
         const res = await axios.get(
-          `${BASE_URL}/payroll/monthlyExpensePerEmployee?month=${month + 1}&year=${year}`,
+          `${BASE_URL}/payroll/totalMonthlyExpense?month=${month + 1}&year=${year}`,
         );
         console.log(res.data);
-        dispatch(setMoneyContributions(res.data));
+        dispatch(setTotalMonthlyContributions(res.data));
       } catch (error) {
         console.error(error);
       }
     }
-    fetchMonthlyExpensePerEmployee();
+    fetchMonthlyExpense();
   }, []);
 
   //working days
@@ -144,6 +129,31 @@ export default function PayrollDashboard() {
     fetchTotalSubscribers();
   }, [dispatch]);
 
+  //avg daily cost
+  const [avgCost, setAvgCost] = useState(0);
+  useEffect(() => {
+    async function fetchAvgDailyCost() {
+      try {
+        const res = await axios.get(
+          `${BASE_URL}/payroll/avgDailyCost?month=${month + 1}&year=${year}`,
+        );
+        console.log(res);
+        setAvgCost(res.data.avgManagementContribution);
+        // console.log(res.data);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+    fetchAvgDailyCost();
+  }, []);
+
+  function formatToINR(amount) {
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
+    }).format(amount);
+  }
+
   return (
     <Layout>
       <div className="max-w-7xl mx-auto p-6">
@@ -164,11 +174,12 @@ export default function PayrollDashboard() {
               <CardTitle className="text-sm font-medium">
                 Monthly Revenue
               </CardTitle>
-              {/* <DollarSign className="h-4 w-4 text-muted-foreground" /> */}₹
+              {/* <DollarSign className="h-4 w-4 text-muted-foreground" /> */}
+              <CreditCard className="h-4 w-4" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                ₹ {totalCombinedContribution}
+                {formatToINR(totalMoneyContributions.totalExpense)}
               </div>
               <p className="text-xs text-muted-foreground">
                 {`${monthName} ${year}`} total
@@ -181,11 +192,12 @@ export default function PayrollDashboard() {
               <CardTitle className="text-sm font-medium">
                 Employee Share
               </CardTitle>
-              {/* <DollarSign className="h-4 w-4 text-muted-foreground" /> */}₹
+              {/* <DollarSign className="h-4 w-4 text-muted-foreground" /> */}
+              <CreditCard className="h-4 w-4" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                ₹ {totalEmployeeContribution}
+                {formatToINR(totalMoneyContributions.totalEmployeeContribution)}
               </div>
               <p className="text-xs text-muted-foreground">35% of total cost</p>
             </CardContent>
@@ -196,11 +208,14 @@ export default function PayrollDashboard() {
               <CardTitle className="text-sm font-medium">
                 Company Share
               </CardTitle>
-              {/* <DollarSign className="h-4 w-4 text-muted-foreground" /> */}₹
+              {/* <DollarSign className="h-4 w-4 text-muted-foreground" /> */}
+              <CreditCard className="h-4 w-4" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                ₹ {totalManagementContribution}
+                {formatToINR(
+                  totalMoneyContributions.totalManagementContribution,
+                )}
               </div>
               <p className="text-xs text-muted-foreground">
                 65% subsidy amount
@@ -302,16 +317,14 @@ export default function PayrollDashboard() {
                 <h4 className="font-medium text-gray-900 mb-2">
                   Average Daily Cost
                 </h4>
-                <p className="text-2xl font-bold">₹ {averageDailyTotalCost}</p>
+                <p className="text-2xl font-bold">{formatToINR(avgCost)}</p>
                 <p className="text-sm text-gray-500">Per working day</p>
               </div>
               <div>
                 <h4 className="font-medium text-gray-900 mb-2">
                   Subscriber Rate
                 </h4>
-                <p className="text-2xl font-bold">
-                  {percentOfsubscribedEmployeesFromTotal}%
-                </p>
+                <p className="text-2xl font-bold">{percentage.toFixed(2)}%</p>
                 <p className="text-sm text-gray-500">Of total employees</p>
               </div>
             </div>

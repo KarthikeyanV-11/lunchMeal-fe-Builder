@@ -10,6 +10,9 @@ import {
   Star,
   StarHalf,
   StarOff,
+  CreditCard,
+  Hourglass,
+  ClockFading,
 } from "lucide-react";
 
 import { useEffect, useState } from "react";
@@ -18,10 +21,15 @@ import {
   setEmployees,
   setMoneyContributions,
   setSubscribedEmployees,
+  setTotalMonthlyContributions,
 } from "../../slice/employeeSlice";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { setAllRatings, setLastThreeRatings } from "../../slice/menuFeedback";
+import {
+  setAllRatings,
+  setLastThreeRatings,
+  setMonthlyAvgRating,
+} from "../../slice/menuFeedback";
 
 //uses employeeSlice redux.
 //backend api format: [{},{}...{}]
@@ -40,6 +48,7 @@ export default function AdminDashboard() {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [showSubscription, setShowSubscription] = useState(0);
 
   //REDUX RELATED
   const user = useSelector((state) => state.auth.user);
@@ -50,12 +59,11 @@ export default function AdminDashboard() {
   console.log(fb);
 
   const lastThree = useSelector((state) => state.feedback.lastThreeRatings);
-  console.log(lastThree);
 
   // FINDING OUT THE TOTAL STRENGTH
-  const employeeStrength = useSelector(
-    (state) => state.employee.allEmployees.length,
-  );
+  // const employeeStrength = useSelector(
+  //   (state) => state.employee.allEmployees.length,
+  // );
 
   //FINDING OUT THE TOTAL SUBSCRIBED EMPLOYEES
   const subscribedEmployees = useSelector(
@@ -63,34 +71,35 @@ export default function AdminDashboard() {
   );
   // console.log(employeeStrength[0]);
 
-  const moneyRelated = useSelector(
-    (state) => state.employee.moneyContributions,
+  const monthlyContribution = useSelector(
+    (state) => state.employee.monthlyContributions,
   );
-  const totalContribution = moneyRelated.totalContribution;
-  console.log(moneyRelated);
+  console.log(monthlyContribution);
 
-  const companyContribution = moneyRelated.managementContribution;
-  const employeeContribution = moneyRelated.employeeContribution;
+  const monthlyAvgRating = useSelector(
+    (state) => state.feedback.monthlyAvgRating,
+  );
+  console.log(monthlyAvgRating);
 
   //USE EFFECTS
-  useEffect(() => {
-    const fetchEmployees = async () => {
-      try {
-        const response = await axios.get(
-          `${BASE_URL}/employee/getAllEmployees`, // url for fetching all the employee details
-        );
+  // useEffect(() => {
+  //   const fetchEmployees = async () => {
+  //     try {
+  //       const response = await axios.get(
+  //         `${BASE_URL}/employee/getAllEmployees`, // url for fetching all the employee details
+  //       );
 
-        const employeesArray = response.data;
-        // console.log(employeesArray[0]); getting the first user
+  //       const employeesArray = response.data;
+  //       // console.log(employeesArray[0]); getting the first user
 
-        dispatch(setEmployees(employeesArray));
-      } catch (error) {
-        console.error("Error fetching employees:", error.message);
-      }
-    };
+  //       dispatch(setEmployees(employeesArray));
+  //     } catch (error) {
+  //       console.error("Error fetching employees:", error.message);
+  //     }
+  //   };
 
-    fetchEmployees();
-  }, [dispatch]);
+  //   fetchEmployees();
+  // }, [dispatch]);
 
   useEffect(() => {
     async function fetchRatings() {
@@ -137,6 +146,55 @@ export default function AdminDashboard() {
     fetchMonthlyExpensePerEmployee();
   }, []);
 
+  //monthly expense
+  useEffect(() => {
+    async function fetchTotalMonthlyExpense() {
+      try {
+        const res = await axios.get(
+          `${BASE_URL}/payroll/totalMonthlyExpense?month=${month + 1}&year=${year}`,
+        );
+        console.log(res.data);
+        dispatch(setTotalMonthlyContributions(res.data));
+      } catch (error) {
+        console.error(error);
+      }
+    }
+    fetchTotalMonthlyExpense();
+  }, []);
+
+  useEffect(() => {
+    async function fetchMonthyAvgRating() {
+      try {
+        const res = await axios.get(
+          `${BASE_URL}/rating/avgMonthlyRating?month=${month}&year=${year}`,
+        );
+        console.log(res.data);
+        dispatch(setMonthlyAvgRating(res.data));
+      } catch (error) {
+        console.error(error);
+      }
+    }
+    fetchMonthyAvgRating();
+  }, [dispatch]);
+
+  useEffect(() => {
+    async function fetchSubscriptionWindowOpen() {
+      try {
+        const res = await axios.get(
+          `${BASE_URL}/subscription/subscriptionWindow`,
+        );
+
+        const remainingDays = res.data.status;
+        setShowSubscription(remainingDays);
+
+        console.log(showSubscription);
+      } catch (error) {
+        console.log(error);
+      }
+    }
+    fetchSubscriptionWindowOpen();
+  }, []);
+
   //UTILITY FUNCTIONS
   function renderStars(rating) {
     const stars = [];
@@ -156,6 +214,13 @@ export default function AdminDashboard() {
       }
     }
     return stars;
+  }
+
+  function formatToINR(amount) {
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
+    }).format(amount);
   }
 
   //SUBMITTING EVENTS
@@ -225,16 +290,21 @@ export default function AdminDashboard() {
               <CardTitle className="text-sm font-medium">
                 Monthly Cost
               </CardTitle>
-              {/* <DollarSign className="h-4 w-4 text-muted-foreground" /> */}₹
+              {/* <DollarSign className="h-4 w-4 text-muted-foreground" /> */}
+              <CreditCard className="h-5 w-5" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">₹ {totalContribution}</div>{" "}
+              <div className="text-2xl font-bold">
+                {formatToINR(monthlyContribution.totalExpense)}
+              </div>{" "}
               {/* subscribedEmployees * 100*/}
               <p className="text-xs text-muted-foreground">
-                company share: {companyContribution}
+                company share:{" "}
+                {formatToINR(monthlyContribution.totalManagementContribution)}
               </p>
               <p className="text-xs text-muted-foreground">
-                Employee share: {employeeContribution}
+                Employee share:{" "}
+                {formatToINR(monthlyContribution.totalEmployeeContribution)}
               </p>
             </CardContent>
           </Card>
@@ -244,26 +314,34 @@ export default function AdminDashboard() {
               <CardTitle className="text-sm font-medium">
                 Subscription Window
               </CardTitle>
-              <Badge variant="default" className="bg-green-100 text-green-800">
-                Open
-              </Badge>
+              <ClockFading className="h-4 w-4" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">5 days</div>
-              <p className="text-xs text-muted-foreground">Remaining</p>
+              <div className="text-2xl font-bold">{showSubscription} days</div>
+              <p className="text-xs text-muted-foreground">
+                {showSubscription > 0
+                  ? "Remaining"
+                  : showSubscription === 0
+                    ? "Closes today"
+                    : "Closed"}
+              </p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Monthly Avg Rating
+                Previous Month Avg Rating
               </CardTitle>
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">4.2</div>
-              <p className="text-xs text-muted-foreground">Based on feedback</p>
+              <div className="text-2xl font-bold">
+                {monthlyAvgRating.avgRating?.toFixed(1)}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Based on {monthlyAvgRating.count} feedback
+              </p>
             </CardContent>
           </Card>
         </div>

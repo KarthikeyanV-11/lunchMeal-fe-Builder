@@ -20,7 +20,7 @@ const navigationConfig = {
   employee: [
     { href: "/employee", label: "Dashboard", icon: Home },
     { href: "/employee/calendar", label: "Calendar", icon: Calendar },
-    { href: "/employee/subscription", label: "Subscription", icon: FileText },
+    // { href: "/employee/subscription", label: "Subscription", icon: FileText },
     // { href: "/employee/notifications", label: "Notifications", icon: Bell },
   ],
   admin: [

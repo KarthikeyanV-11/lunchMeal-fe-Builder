@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
-import { Button } from "@/components/ui/button";
+import { useAuth } from "../contexts/AuthContext";
+import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useDispatch } from "react-redux";
 import { setUser } from "../slice/authSlice";
@@ -167,66 +167,3 @@ export default function Login() {
     </div>
   );
 }
-
-// // //temp for now
-// import { useParams, useNavigate } from "react-router-dom";
-// import { useEffect, useState } from "react";
-// import { useAuth } from "../contexts/AuthContext"; // Ensure this is the correct path
-
-// const Login = () => {
-//   const { role } = useParams(); // role from the route: /login/:role
-//   const navigate = useNavigate();
-//   const { login } = useAuth(); // use login from context
-
-//   const [username, setUsername] = useState("");
-//   const [password, setPassword] = useState("");
-
-//   const handleLogin = (e) => {
-//     e.preventDefault();
-
-//     // TEMP login (no actual auth check)
-//     if (["employee", "admin", "payroll"].includes(role)) {
-//       login(role); // Set role in context + localStorage
-//       navigate(`/${role}`); // Navigate to dashboard of the role
-//     } else {
-//       alert("Invalid role in URL");
-//     }
-//   };
-
-//   return (
-//     <div style={{ padding: "2rem", maxWidth: "400px", margin: "auto" }}>
-//       <h2 style={{ marginBottom: "1rem" }}>
-//         Login as <strong>{role}</strong>
-//       </h2>
-//       <form onSubmit={handleLogin}>
-//         <div style={{ marginBottom: "1rem" }}>
-//           <label>Username:</label>
-//           <input
-//             type="text"
-//             required
-//             value={username}
-//             onChange={(e) => setUsername(e.target.value)}
-//             style={{ display: "block", width: "100%" }}
-//           />
-//         </div>
-
-//         <div style={{ marginBottom: "1rem" }}>
-//           <label>Password:</label>
-//           <input
-//             type="password"
-//             required
-//             value={password}
-//             onChange={(e) => setPassword(e.target.value)}
-//             style={{ display: "block", width: "100%" }}
-//           />
-//         </div>
-
-//         <button type="submit" style={{ padding: "0.5rem 1rem" }}>
-//           Login
-//         </button>
-//       </form>
-//     </div>
-//   );
-// };
-
-// export default Login;

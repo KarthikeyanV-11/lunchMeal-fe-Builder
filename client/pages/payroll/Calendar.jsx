@@ -148,15 +148,17 @@ export default function PayrollCalendar() {
       ];
 
       if (isPast) {
-        dayClasses.push("bg-gray-200 text-gray-400");
+        dayClasses.push("bg-gray-200 text-gray-400 cursor-pointer");
       } else if (isTodayDate) {
         dayClasses.push(
-          "border-blue-500 bg-blue-50 text-blue-700 font-semibold",
+          "border-blue-500 bg-blue-50 text-blue-700 font-semibold cursor-pointer",
         );
       } else if (isWeekendDate) {
-        dayClasses.push("text-gray-400 bg-gray-50");
+        dayClasses.push("text-gray-400 bg-gray-50 cursor-pointer");
       } else {
-        dayClasses.push("hover:bg-blue-100 text-gray-700 shadow-sm");
+        dayClasses.push(
+          "hover:bg-blue-100 text-gray-700 shadow-sm cursor-pointer",
+        );
       }
 
       days.push(

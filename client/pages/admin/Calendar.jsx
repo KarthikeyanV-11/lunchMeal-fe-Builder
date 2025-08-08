@@ -41,150 +41,271 @@ export default function AdminWeekViewCalendar() {
 
   const { role } = useAuth();
 
+  // useEffect(() => {
+  //   const generateWeeks = () => {
+  //     const result = [];
+
+  //     const firstDayOfMonth = new Date(
+  //       currentDate.getFullYear(),
+  //       currentDate.getMonth(),
+  //       1,
+  //     );
+  //     const dayOfWeek = firstDayOfMonth.getDay(); // Sunday=0 ... Saturday=6
+
+  //     // Calculate Monday on or before the first day of this month
+  //     const currentMonday = new Date(firstDayOfMonth);
+  //     currentMonday.setDate(
+  //       firstDayOfMonth.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1),
+  //     );
+
+  //     for (let i = 0; i < 5; i++) {
+  //       const weekStart = new Date(currentMonday);
+  //       weekStart.setDate(currentMonday.getDate() + i * 7);
+
+  //       const weekDates = [];
+  //       for (let d = 0; d < 7; d++) {
+  //         const date = new Date(weekStart);
+  //         date.setDate(weekStart.getDate() + d);
+  //         weekDates.push(date);
+  //       }
+
+  //       const monday = weekDates[0]; // Monday is index 0
+  //       const friday = weekDates[4]; // Friday is index 4
+  //       const rangeLabel = `${formatDisplayDate(monday)} - ${formatDisplayDate(friday)}`;
+
+  //       // Calculate individual day editability for the modal
+  //       const dayEditability = {
+  //         monday: isDayEditable(weekDates[0]),
+  //         tuesday: isDayEditable(weekDates[1]),
+  //         wednesday: isDayEditable(weekDates[2]),
+  //         thursday: isDayEditable(weekDates[3]),
+  //         friday: isDayEditable(weekDates[4]),
+  //       };
+
+  //       result.push({
+  //         range: rangeLabel,
+  //         dates: weekDates,
+  //         assignedMenus: {
+  //           monday: null,
+  //           tuesday: null,
+  //           wednesday: null,
+  //           thursday: null,
+  //           friday: null,
+  //         },
+  //         // IMPORTANT: Add the isDayEditable map here
+  //         isDayEditable: dayEditability,
+  //       });
+  //     }
+
+  //     setWeeks(result);
+  //   };
+
+  //   const fetchMonthlyMenu = async () => {
+  //     try {
+  //       const res = await fetch(
+  //         `${BASE_URL}/menuSchedule/byMonthAndYear?month=${currentDate.getMonth() + 1}&year=${currentDate.getFullYear()}`,
+  //       );
+
+  //       console.log("API Response:", res);
+
+  //       if (!res.ok) {
+  //         throw new Error(`HTTP error! status: ${res.status}`);
+  //       }
+
+  //       const data = await res.json();
+  //       console.log("Fetched Data:", data); // 👀 See the raw API data
+
+  //       const allSchedules = data.flatMap((week) =>
+  //         ["monday", "tuesday", "wednesday", "thursday", "friday"]
+  //           .map((day) => week[day])
+  //           .filter(Boolean),
+  //       );
+
+  //       console.log("Flattened Schedules (Mon–Fri):", allSchedules);
+
+  //       setWeeks((prevWeeks) =>
+  //         prevWeeks.map((week, index) => {
+  //           const updatedAssignedMenus = { ...week.assignedMenus };
+
+  //           console.log(`\n--- Week ${index + 1} ---`);
+  //           week.dates.forEach((date) => {
+  //             const formatted = date.toISOString().split("T")[0]; // UTC date string as before
+  //             const schedule = allSchedules.find(
+  //               (entry) => entry?.date === formatted,
+  //             );
+
+  //             console.log(`Checking date: ${formatted}`);
+  //             if (schedule) {
+  //               // Use UTC day index to get the day clearly without timezone issues
+  //               // 0=Sunday, 1=Monday, ..., 6=Saturday
+  //               const dayIndex = date.getUTCDay();
+  //               const weekdays = [
+  //                 "sunday",
+  //                 "monday",
+  //                 "tuesday",
+  //                 "wednesday",
+  //                 "thursday",
+  //                 "friday",
+  //                 "saturday",
+  //               ];
+  //               const day = weekdays[dayIndex];
+
+  //               console.log(`→ Found match on ${day}:`, schedule);
+
+  //               // Only assign menus for Monday through Friday as before
+  //               if (
+  //                 [
+  //                   "monday",
+  //                   "tuesday",
+  //                   "wednesday",
+  //                   "thursday",
+  //                   "friday",
+  //                 ].includes(day)
+  //               ) {
+  //                 updatedAssignedMenus[day] = {
+  //                   menuName: schedule.menuName,
+  //                   menuType: schedule.menuType,
+  //                 };
+  //               }
+  //             } else {
+  //               console.log(`→ No match found for ${formatted}`);
+  //             }
+  //           });
+
+  //           return {
+  //             ...week,
+  //             assignedMenus: updatedAssignedMenus,
+  //           };
+  //         }),
+  //       );
+  //     } catch (error) {
+  //       console.error("Failed to fetch monthly menu:", error);
+  //     }
+  //   };
+
+  //   generateWeeks();
+  //   fetchMonthlyMenu();
+  // }, [currentDate]);
+
   useEffect(() => {
-    const generateWeeks = () => {
-      const result = [];
-
-      const firstDayOfMonth = new Date(
-        currentDate.getFullYear(),
-        currentDate.getMonth(),
-        1,
-      );
-      const dayOfWeek = firstDayOfMonth.getDay(); // Sunday=0 ... Saturday=6
-
-      // Calculate Monday on or before the first day of this month
-      const currentMonday = new Date(firstDayOfMonth);
-      currentMonday.setDate(
-        firstDayOfMonth.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1),
-      );
-
-      for (let i = 0; i < 5; i++) {
-        const weekStart = new Date(currentMonday);
-        weekStart.setDate(currentMonday.getDate() + i * 7);
-
-        const weekDates = [];
-        for (let d = 0; d < 7; d++) {
-          const date = new Date(weekStart);
-          date.setDate(weekStart.getDate() + d);
-          weekDates.push(date);
-        }
-
-        const monday = weekDates[0]; // Monday is index 0
-        const friday = weekDates[4]; // Friday is index 4
-        const rangeLabel = `${formatDisplayDate(monday)} - ${formatDisplayDate(friday)}`;
-
-        // Calculate individual day editability for the modal
-        const dayEditability = {
-          monday: isDayEditable(weekDates[0]),
-          tuesday: isDayEditable(weekDates[1]),
-          wednesday: isDayEditable(weekDates[2]),
-          thursday: isDayEditable(weekDates[3]),
-          friday: isDayEditable(weekDates[4]),
-        };
-
-        result.push({
-          range: rangeLabel,
-          dates: weekDates,
-          assignedMenus: {
-            monday: null,
-            tuesday: null,
-            wednesday: null,
-            thursday: null,
-            friday: null,
-          },
-          // IMPORTANT: Add the isDayEditable map here
-          isDayEditable: dayEditability,
-        });
-      }
-
-      setWeeks(result);
-    };
-
     const fetchMonthlyMenu = async () => {
       try {
+        // Step 1: Generate week structure fresh
+        const result = [];
+        const firstDayOfMonth = new Date(
+          currentDate.getFullYear(),
+          currentDate.getMonth(),
+          1,
+        );
+        const dayOfWeek = firstDayOfMonth.getDay(); // Sunday=0 ... Saturday=6
+
+        const currentMonday = new Date(firstDayOfMonth);
+        currentMonday.setDate(
+          firstDayOfMonth.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1),
+        );
+
+        for (let i = 0; i < 5; i++) {
+          const weekStart = new Date(currentMonday);
+          weekStart.setDate(currentMonday.getDate() + i * 7);
+
+          const weekDates = [];
+          for (let d = 0; d < 7; d++) {
+            const date = new Date(weekStart);
+            date.setDate(weekStart.getDate() + d);
+            weekDates.push(date);
+          }
+
+          const monday = weekDates[0];
+          const friday = weekDates[4];
+          const rangeLabel = `${formatDisplayDate(monday)} - ${formatDisplayDate(friday)}`;
+
+          const dayEditability = {
+            monday: isDayEditable(weekDates[0]),
+            tuesday: isDayEditable(weekDates[1]),
+            wednesday: isDayEditable(weekDates[2]),
+            thursday: isDayEditable(weekDates[3]),
+            friday: isDayEditable(weekDates[4]),
+          };
+
+          result.push({
+            range: rangeLabel,
+            dates: weekDates,
+            assignedMenus: {
+              monday: null,
+              tuesday: null,
+              wednesday: null,
+              thursday: null,
+              friday: null,
+            },
+            isDayEditable: dayEditability,
+          });
+        }
+
+        // Step 2: Fetch assigned menus
         const res = await fetch(
           `${BASE_URL}/menuSchedule/byMonthAndYear?month=${currentDate.getMonth() + 1}&year=${currentDate.getFullYear()}`,
         );
-
-        console.log("API Response:", res);
 
         if (!res.ok) {
           throw new Error(`HTTP error! status: ${res.status}`);
         }
 
         const data = await res.json();
-        console.log("Fetched Data:", data); // 👀 See the raw API data
-
         const allSchedules = data.flatMap((week) =>
           ["monday", "tuesday", "wednesday", "thursday", "friday"]
             .map((day) => week[day])
             .filter(Boolean),
         );
 
-        console.log("Flattened Schedules (Mon–Fri):", allSchedules);
+        // Step 3: Assign menus to generated weeks
+        const updatedWeeks = result.map((week) => {
+          const updatedAssignedMenus = { ...week.assignedMenus };
 
-        setWeeks((prevWeeks) =>
-          prevWeeks.map((week, index) => {
-            const updatedAssignedMenus = { ...week.assignedMenus };
+          week.dates.forEach((date) => {
+            const formatted = date.toISOString().split("T")[0];
+            const schedule = allSchedules.find(
+              (entry) => entry?.date === formatted,
+            );
 
-            console.log(`\n--- Week ${index + 1} ---`);
-            week.dates.forEach((date) => {
-              const formatted = date.toISOString().split("T")[0]; // UTC date string as before
-              const schedule = allSchedules.find(
-                (entry) => entry?.date === formatted,
-              );
+            const dayIndex = date.getUTCDay();
+            const weekdays = [
+              "sunday",
+              "monday",
+              "tuesday",
+              "wednesday",
+              "thursday",
+              "friday",
+              "saturday",
+            ];
+            const day = weekdays[dayIndex];
 
-              console.log(`Checking date: ${formatted}`);
-              if (schedule) {
-                // Use UTC day index to get the day clearly without timezone issues
-                // 0=Sunday, 1=Monday, ..., 6=Saturday
-                const dayIndex = date.getUTCDay();
-                const weekdays = [
-                  "sunday",
-                  "monday",
-                  "tuesday",
-                  "wednesday",
-                  "thursday",
-                  "friday",
-                  "saturday",
-                ];
-                const day = weekdays[dayIndex];
+            if (
+              ["monday", "tuesday", "wednesday", "thursday", "friday"].includes(
+                day,
+              ) &&
+              schedule
+            ) {
+              updatedAssignedMenus[day] = {
+                menuName: schedule.menuName,
+                menuType: schedule.menuType,
+              };
+            }
+          });
 
-                console.log(`→ Found match on ${day}:`, schedule);
+          return {
+            ...week,
+            assignedMenus: updatedAssignedMenus,
+          };
+        });
 
-                // Only assign menus for Monday through Friday as before
-                if (
-                  [
-                    "monday",
-                    "tuesday",
-                    "wednesday",
-                    "thursday",
-                    "friday",
-                  ].includes(day)
-                ) {
-                  updatedAssignedMenus[day] = {
-                    menuName: schedule.menuName,
-                    menuType: schedule.menuType,
-                  };
-                }
-              } else {
-                console.log(`→ No match found for ${formatted}`);
-              }
-            });
-
-            return {
-              ...week,
-              assignedMenus: updatedAssignedMenus,
-            };
-          }),
-        );
+        // Step 4: Update UI state
+        setWeeks(updatedWeeks);
       } catch (error) {
         console.error("Failed to fetch monthly menu:", error);
       }
     };
 
-    generateWeeks();
-    fetchMonthlyMenu(); // 🆕 Add this
+    fetchMonthlyMenu();
   }, [currentDate]);
 
   const formatDisplayDate = (date) => {
@@ -281,59 +402,232 @@ export default function AdminWeekViewCalendar() {
   // Function to handle saving assignments from the WeekMenuModal (to be passed to modal)
   // Inside AdminWeekViewCalendar.jsx
 
-  const handleSaveWeekAssignment = async (weekToUpdate, assignments) => {
-    console.log(
-      "Saving assignments for week:",
-      weekToUpdate.range,
-      assignments,
+  // const handleSaveWeekAssignment = async (weekToUpdate, assignments) => {
+  //   console.log(
+  //     "Saving assignments for week:",
+  //     weekToUpdate.range,
+  //     assignments,
+  //   );
+
+  //   // OPTIONAL: Optimistic UI update (kept for immediate feedback)
+  //   setWeeks((prevWeeks) =>
+  //     prevWeeks.map((week) =>
+  //       week.range === weekToUpdate.range
+  //         ? { ...week, assignedMenus: assignments }
+  //         : week,
+  //     ),
+  //   );
+
+  //   // --- THIS IS THE CRITICAL PART YOU NEED TO ADD/MODIFY ---
+  //   try {
+  //     const response = await fetch(`${BASE_URL}/menuSchedule`, {
+  //       // <--- IMPORTANT: Adjust this endpoint to your actual backend API
+  //       method: "POST", // Or 'PUT' depending on your backend's design
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //         // Add any authentication headers if your API requires them (e.g., 'Authorization': `Bearer ${yourAuthToken}`)
+  //       },
+  //       body: JSON.stringify({
+  //         // You need to send data in a format your backend expects to identify the week and update assignments
+  //         startDate: weekToUpdate.dates[0].toISOString().split("T")[0], // Example: Send the Monday's date
+  //         // endDa
+  //         assignments: assignments, // The object containing monday, tuesday, etc. menu details
+  //       }),
+  //     });
+  //     console.log(response);
+
+  //     if (!response.ok) {
+  //       const errorData = await response.json(); // Try to get error message from backend
+  //       throw new Error(
+  //         `Failed to save menu assignments: ${errorData.message || response.statusText}`,
+  //       );
+  //     }
+
+  //     console.log("Menu assignments successfully saved to backend.");
+
+  //     // After successful save to backend, re-fetch to ensure calendar is in sync
+  //     await fetchMonthlyMenu();
+  //   } catch (error) {
+  //     console.error("Error saving menu assignments:", error);
+  //     // TODO: Implement user-facing error feedback (e.g., a toast notification)
+  //     // If you did an optimistic update, you might want to revert it here if the save failed.
+  //   }
+
+  //   // Close the modal and clear selected data regardless of save success/failure
+  //   setIsWeekMenuModalOpen(false);
+  //   setSelectedWeekData(null);
+  // };
+
+  // const handleSaveWeekAssignment = async (weekToUpdate, newAssignments) => {
+  //   console.log(
+  //     "Saving assignments for week:",
+  //     weekToUpdate.range,
+  //     newAssignments,
+  //   );
+
+  //   const formatDateLocal = (date) => {
+  //     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+  //   };
+
+  //   const startDate = formatDateLocal(weekToUpdate.dates[0]);
+  //   const endDate = formatDateLocal(weekToUpdate.dates[4]);
+
+  //   const existingWeek = weeks.find(
+  //     (w) =>
+  //       formatDateLocal(w.dates[0]) === startDate &&
+  //       formatDateLocal(w.dates[4]) === endDate,
+  //   );
+
+  //   const mergedAssignments = {
+  //     startDate,
+  //     endDate,
+  //   };
+
+  //   const days = ["monday", "tuesday", "wednesday", "thursday", "friday"];
+
+  //   // Merge new assignments with existing
+  //   days.forEach((day) => {
+  //     if (newAssignments[day]?.id) {
+  //       mergedAssignments[day] = newAssignments[day].id;
+  //     } else if (existingWeek?.assignedMenus?.[day]?.id) {
+  //       mergedAssignments[day] = existingWeek.assignedMenus[day].id;
+  //     }
+  //   });
+
+  //   try {
+  //     const response = await fetch(`${BASE_URL}/menuSchedule`, {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify(mergedAssignments),
+  //     });
+
+  //     if (!response.ok) {
+  //       const errorData = await response.json();
+  //       throw new Error(
+  //         `Failed to save menu assignments: ${errorData.message || response.statusText}`,
+  //       );
+  //     }
+
+  //     console.log("Menu assignments successfully saved to backend.");
+
+  //     // ✅ Update local weeks state immediately
+  //     const updatedWeeks = weeks.map((week) => {
+  //       if (
+  //         formatDateLocal(week.dates[0]) === startDate &&
+  //         formatDateLocal(week.dates[4]) === endDate
+  //       ) {
+  //         const updatedAssignedMenus = { ...week.assignedMenus };
+
+  //         days.forEach((day) => {
+  //           if (mergedAssignments[day]) {
+  //             updatedAssignedMenus[day] = { id: mergedAssignments[day] };
+  //           }
+  //         });
+
+  //         return {
+  //           ...week,
+  //           assignedMenus: updatedAssignedMenus,
+  //         };
+  //       }
+
+  //       return week;
+  //     });
+
+  //     setWeeks(updatedWeeks); // ⬅️ Reflect changes in the UI
+
+  //     setIsWeekMenuModalOpen(false);
+  //     setSelectedWeekData(null);
+
+  //     // Optional: Also fetch from backend if needed
+  //     // await fetchMonthlyMenu();
+  //   } catch (error) {
+  //     console.error("Error saving menu assignments:", error);
+  //   }
+  // };
+
+  const handleSaveWeekAssignment = async (weekToUpdate, newAssignments) => {
+    const formatDateLocal = (date) =>
+      `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+
+    const startDate = formatDateLocal(weekToUpdate.dates[0]);
+    const endDate = formatDateLocal(weekToUpdate.dates[4]);
+
+    const existingWeek = weeks.find(
+      (w) =>
+        formatDateLocal(w.dates[0]) === startDate &&
+        formatDateLocal(w.dates[4]) === endDate,
     );
 
-    // OPTIONAL: Optimistic UI update (kept for immediate feedback)
-    setWeeks((prevWeeks) =>
-      prevWeeks.map((week) =>
-        week.range === weekToUpdate.range
-          ? { ...week, assignedMenus: assignments }
-          : week,
-      ),
-    );
+    const mergedAssignments = {
+      startDate,
+      endDate,
+    };
 
-    // --- THIS IS THE CRITICAL PART YOU NEED TO ADD/MODIFY ---
+    const days = ["monday", "tuesday", "wednesday", "thursday", "friday"];
+
+    days.forEach((day, index) => {
+      const date = weekToUpdate.dates[index];
+      const formattedDate = date.toLocaleDateString("en-CA");
+
+      if (newAssignments[day]?.id) {
+        mergedAssignments[day] = newAssignments[day].id;
+      } else if (existingWeek?.assignedMenus?.[formattedDate]?.id) {
+        mergedAssignments[day] = existingWeek.assignedMenus[formattedDate].id;
+      }
+    });
+
     try {
-      const response = await fetch(
-        `${BASE_URL}/your-backend-api/save-menu-assignments`,
-        {
-          // <--- IMPORTANT: Adjust this endpoint to your actual backend API
-          method: "POST", // Or 'PUT' depending on your backend's design
-          headers: {
-            "Content-Type": "application/json",
-            // Add any authentication headers if your API requires them (e.g., 'Authorization': `Bearer ${yourAuthToken}`)
-          },
-          body: JSON.stringify({
-            // You need to send data in a format your backend expects to identify the week and update assignments
-            weekStartDate: weekToUpdate.dates[0].toISOString().split("T")[0], // Example: Send the Monday's date
-            assignments: assignments, // The object containing monday, tuesday, etc. menu details
-          }),
+      const response = await fetch(`${BASE_URL}/menuSchedule`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-      );
+        body: JSON.stringify(mergedAssignments),
+      });
 
       if (!response.ok) {
-        const errorData = await response.json(); // Try to get error message from backend
+        const errorData = await response.json();
         throw new Error(
           `Failed to save menu assignments: ${errorData.message || response.statusText}`,
         );
       }
 
-      console.log("Menu assignments successfully saved to backend.");
+      console.log("Menu assignments saved successfully.");
 
-      // After successful save to backend, re-fetch to ensure calendar is in sync
-      await fetchMonthlyMenu();
+      // ✅ Update state manually instead of refetching
+      setWeeks((prevWeeks) =>
+        prevWeeks.map((week) => {
+          const start = formatDateLocal(week.dates[0]);
+          const end = formatDateLocal(week.dates[4]);
+
+          if (start === startDate && end === endDate) {
+            const updatedMenus = {};
+
+            days.forEach((day, i) => {
+              const date = week.dates[i];
+              const formatted = date.toLocaleDateString("en-CA");
+              const menuId = mergedAssignments[day];
+
+              if (menuId) {
+                updatedMenus[formatted] = { id: menuId };
+              }
+            });
+
+            return {
+              ...week,
+              assignedMenus: updatedMenus,
+            };
+          }
+
+          return week;
+        }),
+      );
     } catch (error) {
       console.error("Error saving menu assignments:", error);
-      // TODO: Implement user-facing error feedback (e.g., a toast notification)
-      // If you did an optimistic update, you might want to revert it here if the save failed.
     }
 
-    // Close the modal and clear selected data regardless of save success/failure
     setIsWeekMenuModalOpen(false);
     setSelectedWeekData(null);
   };

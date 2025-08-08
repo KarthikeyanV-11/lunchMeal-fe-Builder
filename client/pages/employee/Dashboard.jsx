@@ -120,7 +120,7 @@ export default function EmployeeDashboard() {
   }, []); // on mount
 
   useEffect(() => {
-    async function handleFetchingNotifications() {
+    async function handleFetchingRecentNotifications() {
       try {
         const res = await axios.get(`${BASE_URL}/notifications/lastThree`);
         console.log("LAST THREE", res.data);
@@ -131,7 +131,7 @@ export default function EmployeeDashboard() {
         console.error(error);
       }
     }
-    handleFetchingNotifications();
+    handleFetchingRecentNotifications();
   }, []); // on mount
 
   useEffect(() => {
@@ -280,6 +280,13 @@ export default function EmployeeDashboard() {
     return `${diffDays} days ago`;
   }
 
+  function formatToINR(amount) {
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
+    }).format(amount);
+  }
+
   return (
     <Layout>
       <div className="max-w-7xl mx-auto p-6">
@@ -349,12 +356,14 @@ export default function EmployeeDashboard() {
               <CreditCard className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">₹ {totalContribution}</div>
+              <div className="text-2xl font-bold">
+                {formatToINR(totalContribution)}
+              </div>
               <p className="text-xs text-muted-foreground">
-                Company share: ₹ {managementContribution}
+                Company share: {formatToINR(managementContribution)}
               </p>
               <p className="text-xs text-muted-foreground font-bold">
-                Employee share: ₹ {employeeContribution}
+                Employee share: {formatToINR(employeeContribution)}
               </p>
             </CardContent>
           </Card>
@@ -399,66 +408,82 @@ export default function EmployeeDashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {/* Rating */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Rate the food (1 to 5){" "}
-                    <span className="text-gray-400">(Optional)</span>
-                  </label>
-                  <select
-                    value={rating}
-                    onChange={(e) => setRating(e.target.value)}
-                    className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="">Select rating</option>
-                    <option value="1">1 - Very Bad</option>
-                    <option value="2">2 - Bad</option>
-                    <option value="3">3 - Okay</option>
-                    <option value="4">4 - Good</option>
-                    <option value="5">5 - Excellent</option>
-                  </select>
-                </div>
+              {submittedRating || submittedDescription ? (
+                // ✅ If feedback is submitted, show only the summary
+                <div className="bg-gray-50 p-6 rounded-lg border border-gray-200 text-gray-800 space-y-2 text-center mt-20">
+                  <h3 className="text-lg font-bold text-green-700">
+                    Thanks for your feedback!
+                  </h3>
 
-                {/* Description */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Description / Comments{" "}
-                    <span className="text-gray-400">(Optional)</span>
-                  </label>
-                  <textarea
-                    rows="3"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Share your feedback on the food"
-                  />
-                </div>
-
-                {/* Submit */}
-                <div className="flex justify-center pt-2">
-                  <Button onClick={handleRatingSubmit}>Submit</Button>
-                </div>
-              </div>
-
-              {/* Feedback Summary */}
-              {(submittedRating || submittedDescription) && (
-                <div className="bg-gray-50 p-3 rounded border border-gray-200 text-sm text-gray-700 mt-4 space-y-1">
-                  <p className="font-semibold">Your feedback for today:</p>
-                  {submittedRating ? (
-                    <p>Rating: {submittedRating} / 5</p>
-                  ) : (
-                    <p className="text-gray-400 italic">
-                      You haven’t rated the food yet.
+                  <div className="flex flex-col items-center space-y-1">
+                    <p className="text-base">
+                      <span className="font-medium">Rating:</span>{" "}
+                      <span className="text-yellow-600">
+                        {submittedRating} / 5
+                      </span>
                     </p>
-                  )}
-                  {submittedDescription ? (
-                    <p>Feedback: {submittedDescription}</p>
-                  ) : (
-                    <p className="text-gray-400 italic">
-                      No description given.
+
+                    <p className="text-base">
+                      <span className="font-medium">Comments:</span>{" "}
+                      {submittedDescription ? (
+                        <span className="text-gray-700">
+                          {submittedDescription}
+                        </span>
+                      ) : (
+                        <span className="italic text-gray-400">
+                          No description given.
+                        </span>
+                      )}
                     </p>
-                  )}
+                  </div>
+                </div>
+              ) : (
+                // ❌ If not submitted, show form
+                <div className="space-y-4 mt-4">
+                  {/* Rating */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Rate the food (1 to 5){" "}
+                      <span className="text-gray-400">(Optional)</span>
+                    </label>
+                    <select
+                      value={rating}
+                      onChange={(e) => setRating(e.target.value)}
+                      className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="">Select rating</option>
+                      <option value="1">1 - Very Bad</option>
+                      <option value="2">2 - Bad</option>
+                      <option value="3">3 - Okay</option>
+                      <option value="4">4 - Good</option>
+                      <option value="5">5 - Excellent</option>
+                    </select>
+                  </div>
+
+                  {/* Description */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Description / Comments{" "}
+                      <span className="text-gray-400">(Optional)</span>
+                    </label>
+                    <textarea
+                      rows="3"
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="Share your feedback on the food"
+                    />
+                  </div>
+
+                  {/* Submit */}
+                  <div className="flex justify-center pt-2">
+                    <Button
+                      onClick={handleRatingSubmit}
+                      disabled={feedbackLoading}
+                    >
+                      {feedbackLoading ? "Submitting..." : "Submit"}
+                    </Button>
+                  </div>
                 </div>
               )}
             </CardContent>

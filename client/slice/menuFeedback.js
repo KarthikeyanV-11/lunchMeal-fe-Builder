@@ -6,6 +6,7 @@ const feedbackSlice = createSlice({
   initialState: {
     allFeedbacks: [], // array of feedback objects
     lastThreeRatings: [],
+    monthlyAvgRating: [],
   },
   reducers: {
     setAllRatings: (state, action) => {
@@ -14,9 +15,13 @@ const feedbackSlice = createSlice({
     setLastThreeRatings: (state, action) => {
       state.lastThreeRatings = action.payload;
     },
+    setMonthlyAvgRating(state, action) {
+      state.monthlyAvgRating = action.payload;
+    },
   },
 });
 
-export const { setAllRatings, setLastThreeRatings } = feedbackSlice.actions;
+export const { setAllRatings, setLastThreeRatings, setMonthlyAvgRating } =
+  feedbackSlice.actions;
 
 export default feedbackSlice.reducer;
