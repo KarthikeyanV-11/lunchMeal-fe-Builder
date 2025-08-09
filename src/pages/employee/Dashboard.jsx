@@ -50,7 +50,13 @@ export default function EmployeeDashboard() {
   //REDUX RELATED
   // READING THE REDUX
   const user = useSelector((state) => state.auth.user);
-  const subscriptionDetails = useSelector((state) => state.auth.subscriptions);
+
+  const [prevMonthSub, currenMonthSub] = useSelector(
+    (state) => state.auth.subscriptions,
+  );
+  // console.log(subscriptionDetails);
+  console.log(currenMonthSub?.status);
+
   const location = user?.location;
   const allNotifications = useSelector(
     (state) => state.notification.allNotifications, //the name as in the store
@@ -82,7 +88,7 @@ export default function EmployeeDashboard() {
         const allSubs = res.data;
         console.log(allSubs);
         // Dispatch to Redux store
-        dispatch(setAllNotifications);
+        dispatch(setSubscriptionState(allSubs));
 
         const today = new Date();
         const year = today.getFullYear();
@@ -322,7 +328,7 @@ export default function EmployeeDashboard() {
         {/* Subscription Overview Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            {/* <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
                 Subscription Status
               </CardTitle>
@@ -342,7 +348,31 @@ export default function EmployeeDashboard() {
                   {isActive ? "Active" : "Not Active"}
                 </Badge>
               )}
+            </CardHeader> */}
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Subscription Status
+              </CardTitle>
+              {loading ? (
+                <Badge variant="outline" className="text-gray-600">
+                  Loading...
+                </Badge>
+              ) : (
+                <Badge
+                  variant="default"
+                  className={
+                    currenMonthSub?.status === "ACTIVE"
+                      ? "bg-green-100 text-green-800"
+                      : "bg-red-100 text-red-700"
+                  }
+                >
+                  {currenMonthSub?.status === "ACTIVE"
+                    ? "Active"
+                    : "Not Active"}
+                </Badge>
+              )}
             </CardHeader>
+
             <CardContent>
               <div className="text-2xl font-bold">
                 {monthName} {year}

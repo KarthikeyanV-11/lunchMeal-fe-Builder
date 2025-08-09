@@ -217,7 +217,7 @@
 // export default WeekMenuModal;
 
 import React, { useState, useEffect, useRef } from "react";
-import { Button } from "../../components/ui/Button";
+import { Button } from "./Button";
 import { CalendarDays } from "lucide-react";
 
 const WeekMenuModal = ({

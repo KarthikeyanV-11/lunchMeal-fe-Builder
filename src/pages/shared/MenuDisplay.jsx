@@ -23,15 +23,19 @@ import { useMenu } from "../../contexts/MenuContext";
 // import { toast } from "@/hooks/use-toast";
 import { toast } from "react-hot-toast";
 import axios from "axios";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { setDailyAttendeesCountStats } from "../../slice/employeeSlice";
 
 export default function MenuDisplay() {
   const BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
+  const dispatch = useDispatch();
   const { role, selectedDate } = useParams();
   const navigate = useNavigate();
   const { role: userRole } = useAuth();
   const { fetchMenuForDate, loading } = useMenu();
+
+  console.log(selectedDate);
 
   const employeeId = useSelector((state) => state.auth.user?.id);
 
@@ -56,6 +60,11 @@ export default function MenuDisplay() {
   attendanceDeadline.setDate(attendanceDeadline.getDate() - 1);
   const canMarkAttendance = todayMidnight <= attendanceDeadline && !isPastDate;
 
+  const dailyAttendeesCount = useSelector(
+    (state) => state.employee.attendeesStats,
+  );
+  console.log(dailyAttendeesCount);
+
   useEffect(() => {
     async function loadMenu() {
       // setLoading(true);
@@ -78,6 +87,21 @@ export default function MenuDisplay() {
   }, [selectedDate, fetchMenuForDate]);
 
   console.log(selectedDate);
+
+  useEffect(() => {
+    async function fetchDailyAttendeesStats() {
+      try {
+        const res = await axios.get(
+          `${BASE_URL}/userSubscriptionDetails/attendanceDetails/${selectedDate}`,
+        );
+        console.log(res.data);
+        dispatch(setDailyAttendeesCountStats(res.data));
+      } catch (error) {
+        console.error("Error fetching attendance stats:", error);
+      }
+    }
+    fetchDailyAttendeesStats();
+  }, [selectedDate]);
 
   const handleAttendanceChange = async () => {
     if (!canMarkAttendance) {
@@ -300,18 +324,36 @@ export default function MenuDisplay() {
             </CardHeader>
 
             <CardContent>
-              <div className="grid grid-cols-3 gap-4">
+              {/* <div className="grid grid-cols-3 gap-4">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-green-600">42</div>
+                  <div className="text-2xl font-bold text-green-600">
+                    {dailyAttendeesCount.totalPresent}
+                  </div>
                   <div className="text-sm text-gray-600">Will Attend</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-red-600">8</div>
+                  <div className="text-2xl font-bold text-red-600">
+                    {dailyAttendeesCount.totalAbsents}
+                  </div>
                   <div className="text-sm text-gray-600">Will Skip</div>
                 </div>
-                <div className="text-center">
+                 <div className="text-center">
                   <div className="text-2xl font-bold text-gray-600">106</div>
                   <div className="text-sm text-gray-600">No Response</div>
+                </div> 
+              </div> */}
+              <div className="flex justify-evenly gap-4">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-green-600">
+                    {dailyAttendeesCount.totalPresent}
+                  </div>
+                  <div className="text-sm text-gray-600">Will Attend</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-red-600">
+                    {dailyAttendeesCount.totalAbsents}
+                  </div>
+                  <div className="text-sm text-gray-600">Will Skip</div>
                 </div>
               </div>
             </CardContent>

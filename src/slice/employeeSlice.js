@@ -6,6 +6,7 @@ const initialState = {
   workingDaysStats: [],
   moneyContributions: [],
   monthlyContributions: [],
+  attendeesStats: [],
 };
 
 const employeeSlice = createSlice({
@@ -30,6 +31,9 @@ const employeeSlice = createSlice({
     setTotalMonthlyContributions(state, action) {
       state.monthlyContributions = action.payload;
     },
+    setDailyAttendeesCountStats(state, action) {
+      state.attendeesStats = action.payload;
+    },
   },
 });
 
@@ -40,5 +44,6 @@ export const {
   setWorkingDaysStats,
   setMoneyContributions,
   setTotalMonthlyContributions,
+  setDailyAttendeesCountStats,
 } = employeeSlice.actions;
 export default employeeSlice.reducer;

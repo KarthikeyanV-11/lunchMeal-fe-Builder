@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { UtensilsCrossed, Salad, Ham } from "lucide-react";
-import { Layout } from "@/components/shared/Layout";
-import { Button } from "@/components/ui/button";
+import { Layout } from "../../components/shared/Layout";
+import { Button } from "../../components/ui/Button";
 import CreateTemplateModal from "../../components/ui/CreateTemplateModal";
 import { useSelector, useDispatch } from "react-redux";
 import { setNewTemplate } from "../../slice/menuSlice";

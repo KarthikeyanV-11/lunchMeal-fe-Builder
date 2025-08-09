@@ -1,10 +1,5 @@
 import { Layout } from "./Layout";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "../../components/ui/Card";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/Card";
 import { Construction } from "lucide-react";
 
 export const PlaceholderPage = ({
