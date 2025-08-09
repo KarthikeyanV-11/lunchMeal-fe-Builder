@@ -1,7 +1,12 @@
-import { Layout } from "@/components/shared/Layout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Layout } from "../../components/shared/Layout";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../../components/ui/Card";
+import { Badge } from "../../components/ui/Badge";
+import { Button } from "../../components/ui/Button";
 import { Download, CheckCircle, AlertCircle, CreditCard } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import {

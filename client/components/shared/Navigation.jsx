@@ -10,8 +10,8 @@ import {
   Upload,
   BarChart,
 } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
-import { Button } from "@/components/ui/button";
+import { useAuth } from "../../contexts/AuthContext";
+import { Button } from "../../components/ui/Button";
 import { useDispatch } from "react-redux";
 import { clearUser } from "../../slice/authSlice";
 import { toast } from "react-hot-toast";

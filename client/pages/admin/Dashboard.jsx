@@ -1,8 +1,12 @@
-import { Layout } from "@/components/shared/Layout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
+import { Layout } from "../../components/shared/Layout";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../../components/ui/Card";
+import { Button } from "../../components/ui/Button";
+// import { Switch } from "@/c";
 import {
   Users,
   Calendar,
@@ -122,6 +126,7 @@ export default function AdminDashboard() {
         const res = await axios.get(
           `${BASE_URL}/subscription/active?month=${month + 1}&year=${year}`,
         );
+        console.log(res);
         dispatch(setSubscribedEmployees(res.data));
         console.log(res.data);
       } catch (error) {
@@ -390,7 +395,7 @@ export default function AdminDashboard() {
                     Allow new subscriptions
                   </p>
                 </div>
-                <Switch defaultChecked />
+                {/* <Switch defaultChecked /> */}
               </div>
               <div className="flex items-center justify-between">
                 <div>
@@ -399,7 +404,7 @@ export default function AdminDashboard() {
                     Automatically renew subscriptions
                   </p>
                 </div>
-                <Switch defaultChecked />
+                {/* <Switch defaultChecked /> */}
               </div>
               <Button className="w-full mt-4">Send Monthly Reminder</Button>
             </CardContent>

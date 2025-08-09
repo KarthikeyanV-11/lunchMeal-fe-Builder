@@ -1,4 +1,4 @@
-# Fusion Starter
+<!-- # Fusion Starter
 
 A production-ready full-stack React application template with integrated Express server, featuring React Router 6 SPA mode, TypeScript, Vitest, Zod and modern tooling.
 
@@ -53,7 +53,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 ### Styling System
 
 - **Primary**: TailwindCSS 3 utility classes
-- **Theme and design tokens**: Configure in `client/global.css` 
+- **Theme and design tokens**: Configure in `client/global.css`
 - **UI components**: Pre-built library in `client/components/ui/`
 - **Utility**: `cn()` function combines `clsx` + `tailwind-merge` for conditional classes
 
@@ -74,7 +74,7 @@ className={cn(
 
 #### Example API Routes
 - `GET /api/ping` - Simple ping api
-- `GET /api/demo` - Demo endpoint  
+- `GET /api/demo` - Demo endpoint
 
 ### Shared Types
 Import consistent types in both client and server:
@@ -161,4 +161,4 @@ const data: MyRouteResponse = await response.json();
 - Full hot reload for rapid development
 - Production-ready with multiple deployment options
 - Comprehensive UI component library included
-- Type-safe API communication via shared interfaces
+- Type-safe API communication via shared interfaces -->

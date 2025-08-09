@@ -1,5 +1,5 @@
 import { forwardRef } from "react";
-import { cn } from "@/lib/utils";
+import { cn } from "../../lib/utils";
 
 const Button = forwardRef(
   ({ className, variant = "default", size = "default", ...props }, ref) => {

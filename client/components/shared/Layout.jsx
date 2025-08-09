@@ -1,5 +1,5 @@
 import { Navigation } from "./Navigation";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "../../contexts/AuthContext";
 
 export const Layout = ({ children, showNavigation = true }) => {
   const { isAuthenticated } = useAuth();

@@ -11,9 +11,9 @@ import {
   Salad,
   Ham,
 } from "lucide-react";
-import { Layout } from "@/components/shared/Layout";
-import { useAuth } from "@/contexts/AuthContext";
-import { Button } from "@/components/ui/button";
+import { Layout } from "../../components/shared/Layout";
+import { useAuth } from "../../contexts/AuthContext";
+import { Button } from "../../components/ui/Button";
 import WeekMenuModal from "../../components/ui/WeekMenuModal";
 import CreateTemplateModal from "../../components/ui/CreateTemplateModal";
 import { useNavigate } from "react-router-dom";
@@ -282,13 +282,17 @@ export default function AdminWeekViewCalendar() {
             if (
               ["monday", "tuesday", "wednesday", "thursday", "friday"].includes(
                 day,
-              ) &&
-              schedule
+              )
             ) {
-              updatedAssignedMenus[day] = {
-                menuName: schedule.menuName,
-                menuType: schedule.menuType,
-              };
+              if (schedule) {
+                updatedAssignedMenus[day] = {
+                  id: schedule.id,
+                  menuName: schedule.menuName,
+                  menuType: schedule.menuType,
+                };
+              } else {
+                updatedAssignedMenus[day] = null;
+              }
             }
           });
 
@@ -554,29 +558,52 @@ export default function AdminWeekViewCalendar() {
     const startDate = formatDateLocal(weekToUpdate.dates[0]);
     const endDate = formatDateLocal(weekToUpdate.dates[4]);
 
-    const existingWeek = weeks.find(
-      (w) =>
-        formatDateLocal(w.dates[0]) === startDate &&
-        formatDateLocal(w.dates[4]) === endDate,
-    );
+    // ✅ fallback to modal state if not found in weeks state
+    const existingWeek =
+      weeks.find(
+        (w) =>
+          formatDateLocal(w.dates[0]) === startDate &&
+          formatDateLocal(w.dates[4]) === endDate,
+      ) || weekToUpdate;
+
+    const days = ["monday", "tuesday", "wednesday", "thursday", "friday"];
 
     const mergedAssignments = {
       startDate,
       endDate,
     };
 
-    const days = ["monday", "tuesday", "wednesday", "thursday", "friday"];
+    // 🔁 Always loop through all weekdays
+    days.forEach((day) => {
+      const newAssigned = newAssignments?.[day];
+      const existingAssigned = existingWeek?.assignedMenus?.[day];
 
-    days.forEach((day, index) => {
-      const date = weekToUpdate.dates[index];
-      const formattedDate = date.toLocaleDateString("en-CA");
+      const newId =
+        typeof newAssigned === "object" && newAssigned !== null
+          ? newAssigned.id
+          : typeof newAssigned === "number"
+            ? newAssigned
+            : null;
 
-      if (newAssignments[day]?.id) {
-        mergedAssignments[day] = newAssignments[day].id;
-      } else if (existingWeek?.assignedMenus?.[formattedDate]?.id) {
-        mergedAssignments[day] = existingWeek.assignedMenus[formattedDate].id;
+      const existingId =
+        typeof existingAssigned === "object" && existingAssigned !== null
+          ? existingAssigned.id
+          : typeof existingAssigned === "number"
+            ? existingAssigned
+            : null;
+
+      // 🧠 Priority: New → Existing → null
+      if (newId !== null && newId !== undefined) {
+        mergedAssignments[day] = newId;
+      } else if (existingId !== null && existingId !== undefined) {
+        mergedAssignments[day] = existingId;
+      } else {
+        // You can still send null if truly unassigned
+        mergedAssignments[day] = null;
       }
     });
+
+    console.log("📦 Final mergedAssignments payload:", mergedAssignments);
 
     try {
       const response = await fetch(`${BASE_URL}/menuSchedule`, {
@@ -594,9 +621,9 @@ export default function AdminWeekViewCalendar() {
         );
       }
 
-      console.log("Menu assignments saved successfully.");
+      console.log("✅ Menu assignments saved successfully.");
 
-      // ✅ Update state manually instead of refetching
+      // 🔄 Update local state
       setWeeks((prevWeeks) =>
         prevWeeks.map((week) => {
           const start = formatDateLocal(week.dates[0]);
@@ -605,14 +632,11 @@ export default function AdminWeekViewCalendar() {
           if (start === startDate && end === endDate) {
             const updatedMenus = {};
 
-            days.forEach((day, i) => {
-              const date = week.dates[i];
-              const formatted = date.toLocaleDateString("en-CA");
-              const menuId = mergedAssignments[day];
+            days.forEach((day) => {
+              const selectedTemplate = newAssignments[day];
+              const fallback = existingWeek?.assignedMenus?.[day];
 
-              if (menuId) {
-                updatedMenus[formatted] = { id: menuId };
-              }
+              updatedMenus[day] = selectedTemplate ?? fallback ?? null;
             });
 
             return {
@@ -625,7 +649,7 @@ export default function AdminWeekViewCalendar() {
         }),
       );
     } catch (error) {
-      console.error("Error saving menu assignments:", error);
+      console.error("❌ Error saving menu assignments:", error);
     }
 
     setIsWeekMenuModalOpen(false);

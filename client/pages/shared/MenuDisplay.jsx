@@ -1,9 +1,14 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Layout } from "@/components/shared/Layout";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Layout } from "../../components/shared/Layout";
+import { Button } from "../../components/ui/Button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../../components/ui/Card";
+import { Badge } from "../../components/ui/Badge";
 import {
   ArrowLeft,
   CheckCircle,
@@ -13,8 +18,8 @@ import {
   Calendar,
   Clock,
 } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
-import { useMenu } from "@/contexts/MenuContext";
+import { useAuth } from "../../contexts/AuthContext";
+import { useMenu } from "../../contexts/MenuContext";
 // import { toast } from "@/hooks/use-toast";
 import { toast } from "react-hot-toast";
 import axios from "axios";
