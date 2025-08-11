@@ -621,22 +621,46 @@ export default function AdminWeekViewCalendar() {
         );
       }
 
+      const data = await response.json();
+      console.log("Fetched data : ", data);
+
       console.log("✅ Menu assignments saved successfully.");
 
       // 🔄 Update local state
+      // setWeeks((prevWeeks) =>
+      //   prevWeeks.map((week) => {
+      //     const start = formatDateLocal(week.dates[0]);
+      //     const end = formatDateLocal(week.dates[4]);
+
+      //     if (start === startDate && end === endDate) {
+      //       const updatedMenus = {};
+
+      //       days.forEach((day) => {
+      //         const selectedTemplate = newAssignments[day];
+      //         const fallback = existingWeek?.assignedMenus?.[day];
+
+      //         updatedMenus[day] = selectedTemplate ?? fallback ?? null;
+      //       });
+
+      //       return {
+      //         ...week,
+      //         assignedMenus: updatedMenus,
+      //       };
+      //     }
+
+      //     return week;
+      //   }),
+      // );
       setWeeks((prevWeeks) =>
         prevWeeks.map((week) => {
           const start = formatDateLocal(week.dates[0]);
           const end = formatDateLocal(week.dates[4]);
 
           if (start === startDate && end === endDate) {
+            // Use backend-provided values directly
             const updatedMenus = {};
-
             days.forEach((day) => {
-              const selectedTemplate = newAssignments[day];
-              const fallback = existingWeek?.assignedMenus?.[day];
-
-              updatedMenus[day] = selectedTemplate ?? fallback ?? null;
+              updatedMenus[day] = data[day] ?? null; // keep null exactly as backend sends it
             });
 
             return {
@@ -644,7 +668,6 @@ export default function AdminWeekViewCalendar() {
               assignedMenus: updatedMenus,
             };
           }
-
           return week;
         }),
       );

@@ -51,10 +51,8 @@ export default function EmployeeDashboard() {
   // READING THE REDUX
   const user = useSelector((state) => state.auth.user);
 
-  const [prevMonthSub, currenMonthSub] = useSelector(
-    (state) => state.auth.subscriptions,
-  );
-  // console.log(subscriptionDetails);
+  const currenMonthSub = useSelector((state) => state.auth.subscriptions);
+  console.log(currenMonthSub);
   console.log(currenMonthSub?.status);
 
   const location = user?.location;
@@ -83,27 +81,27 @@ export default function EmployeeDashboard() {
     const fetchSubscriptions = async () => {
       try {
         const res = await axios.get(
-          `${BASE_URL}/subscription/employee/${user?.id}`,
+          `${BASE_URL}/subscription/activeEmployee/${user?.id}?month=${month + 1}&year=${year}`,
         );
         const allSubs = res.data;
         console.log(allSubs);
         // Dispatch to Redux store
         dispatch(setSubscriptionState(allSubs));
 
-        const today = new Date();
-        const year = today.getFullYear();
+        // const today = new Date();
+        // const year = today.getFullYear();
 
-        const currentMonthKey = `${today
-          .toLocaleString("default", { month: "long" })
-          .toUpperCase()}_${year}`;
+        // const currentMonthKey = `${today
+        //   .toLocaleString("default", { month: "long" })
+        //   .toUpperCase()}_${year}`;
 
-        const found = allSubs.find(
-          (sub) => sub.duration === currentMonthKey && sub.status === "ACTIVE",
-        );
+        // const found = allSubs.find(
+        //   (sub) => sub.duration === currentMonthKey && sub.status === "ACTIVE",
+        // );
 
-        console.log(found);
+        // console.log(found);
 
-        setIsActive(!!found);
+        // setIsActive(!!found);
       } catch (error) {
         console.error("Error fetching subscription:", error);
         setIsActive(false);

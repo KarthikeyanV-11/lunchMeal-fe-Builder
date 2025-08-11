@@ -156,7 +156,7 @@ export default function AdminDashboard() {
     async function fetchTotalMonthlyExpense() {
       try {
         const res = await axios.get(
-          `${BASE_URL}/payroll/totalMonthlyExpense?month=${month + 1}&year=${year}`,
+          `${BASE_URL}/payroll/totalMonthlyExpense?month=${month}&year=${year}`,
         );
         console.log(res.data);
         dispatch(setTotalMonthlyContributions(res.data));
@@ -293,7 +293,7 @@ export default function AdminDashboard() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Monthly Cost
+                Previous Monthly Cost
               </CardTitle>
               {/* <DollarSign className="h-4 w-4 text-muted-foreground" /> */}
               <CreditCard className="h-5 w-5" />

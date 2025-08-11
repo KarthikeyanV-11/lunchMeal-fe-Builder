@@ -21,6 +21,7 @@ import Login from "./pages/Login";
 import store from "./store";
 import { Provider } from "react-redux";
 import MenuUpload from "./pages/admin/menuUpload";
+import EmployeeMgmt from "./pages/admin/EmployeeMgmt";
 
 // Protected Route Component
 // const ProtectedRoute = ({ children, allowedRoles }) => {
@@ -131,10 +132,11 @@ const AppRoutes = () => (
       path="/admin/employees"
       element={
         <ProtectedRoute allowedRoles={["admin"]}>
-          <PlaceholderPage
+          {/* <PlaceholderPage
             title="Employee Management"
             description="Manage employee subscriptions and preferences."
-          />
+          /> */}
+          <EmployeeMgmt />
         </ProtectedRoute>
       }
     />

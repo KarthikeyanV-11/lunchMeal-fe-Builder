@@ -177,7 +177,7 @@ export default function PayrollDashboard() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Monthly Revenue
+                Monthly Expense
               </CardTitle>
               {/* <DollarSign className="h-4 w-4 text-muted-foreground" /> */}
               <CreditCard className="h-4 w-4" />
@@ -309,7 +309,9 @@ export default function PayrollDashboard() {
         {/* Monthly Summary */}
         <Card className="mt-6">
           <CardHeader>
-            <CardTitle>Monthly Financial Summary - December 2024</CardTitle>
+            <CardTitle>
+              Monthly Financial Summary - {`${monthName} ${year}`}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
