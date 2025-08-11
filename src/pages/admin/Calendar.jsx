@@ -790,9 +790,44 @@ export default function AdminWeekViewCalendar() {
                   const editableDay = isDayEditable(date); // Check individual day's editability
 
                   return (
+                    // <div
+                    //   key={idx}
+                    //   className={`p-4 border-r border-gray-200 last:border-r-0 text-center hover:bg-gray-50 cursor-pointer ${
+                    //     !editableDay ? "opacity-70" : ""
+                    //   }`}
+                    //   onClick={(e) => {
+                    //     e.stopPropagation();
+                    //     navigate(`/menu/${role}/${formattedDate}`);
+                    //   }}
+                    // >
+                    //   <div className="flex flex-col items-center gap-2">
+                    //     <div className="w-8 h-8 bg-gray-100 rounded flex items-center justify-center">
+                    //       <div className="text-gray-400 text-lg">
+                    //         <UtensilsCrossed />
+                    //       </div>
+                    //     </div>
+
+                    //     <span className="text-sm text-gray-500 mb-1 font-bold">
+                    //       {assignedMenu
+                    //         ? assignedMenu.menuName
+                    //         : "Not assigned"}
+                    //     </span>
+
+                    //     <div className="flex items-center gap-1">
+                    //       {editableDay ? (
+                    //         <Edit3 className="w-3 h-3 text-green-500" />
+                    //       ) : (
+                    //         <Lock className="w-3 h-3 text-gray-400" />
+                    //       )}
+                    //       <span className="text-xs text-gray-500">
+                    //         {editableDay ? "Editable" : "Locked"}
+                    //       </span>
+                    //     </div>
+                    //   </div>
+                    // </div>
                     <div
                       key={idx}
-                      className={`p-4 border-r border-gray-200 last:border-r-0 text-center hover:bg-gray-50 cursor-pointer ${
+                      className={`relative p-4 border-r border-gray-200 last:border-r-0 text-center hover:bg-gray-50 cursor-pointer ${
                         !editableDay ? "opacity-70" : ""
                       }`}
                       onClick={(e) => {
@@ -800,14 +835,22 @@ export default function AdminWeekViewCalendar() {
                         navigate(`/menu/${role}/${formattedDate}`);
                       }}
                     >
-                      <div className="flex flex-col items-center gap-2">
+                      {/* Small date in top-right */}
+                      <span className="absolute top-1 right-2 text-xs font-semibold text-gray-800">
+                        {new Date(date).toLocaleDateString("en-GB", {
+                          day: "2-digit",
+                          month: "short",
+                        })}
+                      </span>
+
+                      <div className="mt-3 flex flex-col items-center gap-2">
                         <div className="w-8 h-8 bg-gray-100 rounded flex items-center justify-center">
-                          <div className="text-gray-400 text-lg">
+                          <div className="text-gray-400 text-lg mt-4">
                             <UtensilsCrossed />
                           </div>
                         </div>
 
-                        <span className="text-sm text-gray-500 mb-1 font-bold">
+                        <span className="text-sm text-orange-400 mb-1 font-bold">
                           {assignedMenu
                             ? assignedMenu.menuName
                             : "Not assigned"}
@@ -819,7 +862,7 @@ export default function AdminWeekViewCalendar() {
                           ) : (
                             <Lock className="w-3 h-3 text-gray-400" />
                           )}
-                          <span className="text-xs text-gray-500">
+                          <span className="text-xs font-semibold text-gray-800">
                             {editableDay ? "Editable" : "Locked"}
                           </span>
                         </div>
@@ -832,11 +875,11 @@ export default function AdminWeekViewCalendar() {
           })}
         </div>
 
-        <div className="flex justify-center items-center">
+        {/* <div className="flex justify-center items-center">
           <Button className="mt-4 flex gap-2 justify-center items-center">
             <RefreshCw className="w-4" /> <span>Sync</span>
           </Button>
-        </div>
+        </div> */}
 
         {/* Access Policy */}
         <div className="bg-orange-200 text-gray-900 p-4 rounded-md mt-6 text-sm">

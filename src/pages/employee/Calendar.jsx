@@ -164,7 +164,9 @@ export default function EmployeeCalendar() {
             Lunch Calendar
           </h1>
           <p className="text-lg text-gray-600">
-            Select a date to view the lunch menu and manage your attendance.
+            Select a date to view the{" "}
+            <span className="font-bold">lunch menu</span> and manage your
+            attendance.
           </p>
         </div>
 

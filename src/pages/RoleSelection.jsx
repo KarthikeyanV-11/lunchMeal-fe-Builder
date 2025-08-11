@@ -7,14 +7,14 @@ import {
   CardHeader,
   CardTitle,
 } from "../components/ui/Card";
-import { Users, Shield, DollarSign } from "lucide-react";
+import { Users, Shield, DollarSign, IndianRupee } from "lucide-react";
 
 const roles = [
   {
     type: "employee",
     title: "Employee",
     description:
-      "View menus, manage subscriptions, and track your lunch preferences",
+      "View menus, manage subscriptions, and track your Meal preferences",
     icon: Users,
     color: "bg-blue-50 hover:bg-blue-100 border-blue-200",
   },
@@ -28,10 +28,10 @@ const roles = [
   },
   {
     type: "payroll",
-    title: "Payroll",
+    title: "Accounts",
     description:
-      "Handle payroll exports, reconciliation, and financial reporting",
-    icon: DollarSign,
+      "Handle accounting exports, reconciliation, and financial reporting",
+    icon: IndianRupee,
     color: "bg-purple-50 hover:bg-purple-100 border-purple-200",
   },
 ];
@@ -52,7 +52,7 @@ export default function RoleSelection() {
             Welcome to ICMeal
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
-            Your comprehensive lunch subscription management platform. Choose
+            Your comprehensive Meal subscription management platform. Choose
             your role to access personalized features and dashboard.
           </p>
         </div>
@@ -64,7 +64,7 @@ export default function RoleSelection() {
             return (
               <Card
                 key={role.type}
-                className={`transition-all duration-300 hover:shadow-xl cursor-pointer ${role.color}`}
+                className={`flex flex-col transition-all duration-300 hover:shadow-xl cursor-pointer ${role.color}`}
                 onClick={() => handleRoleSelect(role.type)}
               >
                 <CardHeader className="text-center pb-4">
@@ -77,12 +77,14 @@ export default function RoleSelection() {
                     {role.title}
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="text-center">
+
+                {/* Make content take all remaining space and push button down */}
+                <CardContent className="flex flex-col flex-grow justify-between text-center">
                   <CardDescription className="text-gray-600 mb-6 leading-relaxed">
                     {role.description}
                   </CardDescription>
                   <Button
-                    className="w-full font-semibold py-2 px-4 rounded-lg shadow-md"
+                    className="w-full font-semibold py-2 px-4 rounded-lg shadow-md mt-auto"
                     onClick={(e) => {
                       e.stopPropagation();
                       handleRoleSelect(role.type);
