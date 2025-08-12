@@ -7,9 +7,9 @@ import {
 } from "../../components/ui/Card";
 import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
-import { Calendar, MapPin, CreditCard, Bell } from "lucide-react";
+import { Calendar, MapPin, CreditCard, Bell, ChevronDown } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { setSubscriptionState } from "../../slice/authSlice";
 // import { setSubscriptions } from "../../slice/subscriptionSlice";
@@ -23,6 +23,7 @@ import {
   setMoneyContributions,
   setWorkingDaysStats,
 } from "../../slice/employeeSlice";
+import Loader from "../../components/ui/Loader";
 
 export default function EmployeeDashboard() {
   const BASE_URL = import.meta.env.VITE_BACKEND_URL;
@@ -44,6 +45,9 @@ export default function EmployeeDashboard() {
   const [submittedDescription, setSubmittedDescription] = useState("");
 
   const [showModal, setShowModal] = useState(false);
+  const [open, setOpen] = useState(false);
+
+  const dropdownRef = useRef(null);
 
   // Get last 3 notifications
 
@@ -77,101 +81,169 @@ export default function EmployeeDashboard() {
   const totalContribution = moneyContributions.totalContribution;
 
   //USE EFFECTS
+  // useEffect(() => {
+  //   const fetchSubscriptions = async () => {
+  //     try {
+  //       const res = await axios.get(
+  //         `${BASE_URL}/subscription/activeEmployee/${user?.id}?month=${month + 1}&year=${year}`,
+  //       );
+  //       const allSubs = res.data;
+  //       console.log(allSubs);
+  //       // Dispatch to Redux store
+  //       dispatch(setSubscriptionState(allSubs));
+
+  //       // const today = new Date();
+  //       // const year = today.getFullYear();
+
+  //       // const currentMonthKey = `${today
+  //       //   .toLocaleString("default", { month: "long" })
+  //       //   .toUpperCase()}_${year}`;
+
+  //       // const found = allSubs.find(
+  //       //   (sub) => sub.duration === currentMonthKey && sub.status === "ACTIVE",
+  //       // );
+
+  //       // console.log(found);
+
+  //       // setIsActive(!!found);
+  //     } catch (error) {
+  //       console.error("Error fetching subscription:", error);
+  //       setIsActive(false);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+
+  //   fetchSubscriptions();
+  // }, []);
+
+  // useEffect(() => {
+  //   async function handleFetchingNotifications() {
+  //     try {
+  //       const res = await axios.get(`${BASE_URL}/notifications/all`);
+  //       console.log(res.data);
+  //       const allNotifications = res.data;
+  //       // dispatching to the redux
+  //       dispatch(setAllNotifications(allNotifications));
+  //     } catch (error) {
+  //       console.error(error);
+  //     }
+  //   }
+  //   handleFetchingNotifications();
+  // }, []); // on mount
+
+  // useEffect(() => {
+  //   async function handleFetchingRecentNotifications() {
+  //     try {
+  //       const res = await axios.get(`${BASE_URL}/notifications/lastThree`);
+  //       console.log("LAST THREE", res.data);
+  //       const lastThree = res.data;
+  //       // dispatching to the redux
+  //       dispatch(setLastThreeNotifications(lastThree));
+  //     } catch (error) {
+  //       console.error(error);
+  //     }
+  //   }
+  //   handleFetchingRecentNotifications();
+  // }, []); // on mount
+
+  // useEffect(() => {
+  //   async function fetchWorkingDays() {
+  //     try {
+  //       const res = await axios.get(
+  //         `${BASE_URL}/getWorkingDaysDetails?year=${year}&month=${month + 1}`,
+  //       );
+  //       console.log(res.data);
+  //       dispatch(setWorkingDaysStats(res.data));
+  //     } catch (error) {
+  //       console.error(error);
+  //     }
+  //   }
+  //   fetchWorkingDays();
+  // }, []);
+
+  // useEffect(() => {
+  //   async function fetchMonthlyExpensePerEmployee() {
+  //     try {
+  //       const res = await axios.get(
+  //         `${BASE_URL}/payroll/monthlyExpensePerEmployee?month=${month + 1}&year=${year}`,
+  //       );
+  //       console.log(res.data);
+  //       dispatch(setMoneyContributions(res.data));
+  //     } catch (error) {
+  //       console.error(error);
+  //     }
+  //   }
+  //   fetchMonthlyExpensePerEmployee();
+  // }, []);
+
   useEffect(() => {
-    const fetchSubscriptions = async () => {
+    let isMounted = true; // avoid state updates if unmounted
+
+    async function fetchDashboardData() {
+      setLoading(true);
       try {
-        const res = await axios.get(
-          `${BASE_URL}/subscription/activeEmployee/${user?.id}?month=${month + 1}&year=${year}`,
-        );
-        const allSubs = res.data;
-        console.log(allSubs);
-        // Dispatch to Redux store
-        dispatch(setSubscriptionState(allSubs));
+        // Run all API calls in parallel
+        const [
+          subsRes,
+          allNotifRes,
+          lastThreeNotifRes,
+          workingDaysRes,
+          monthlyExpenseRes,
+        ] = await Promise.all([
+          axios.get(
+            `${BASE_URL}/subscription/activeEmployee/${user?.id}?month=${month + 1}&year=${year}`,
+          ),
+          axios.get(`${BASE_URL}/notifications/all`),
+          axios.get(`${BASE_URL}/notifications/lastThree`),
+          axios.get(
+            `${BASE_URL}/getWorkingDaysDetails?year=${year}&month=${month + 1}`,
+          ),
+          axios.get(
+            `${BASE_URL}/payroll/monthlyExpensePerEmployee?month=${month + 1}&year=${year}`,
+          ),
+        ]);
 
-        // const today = new Date();
-        // const year = today.getFullYear();
+        if (!isMounted) return;
 
-        // const currentMonthKey = `${today
-        //   .toLocaleString("default", { month: "long" })
-        //   .toUpperCase()}_${year}`;
-
-        // const found = allSubs.find(
-        //   (sub) => sub.duration === currentMonthKey && sub.status === "ACTIVE",
-        // );
-
-        // console.log(found);
-
-        // setIsActive(!!found);
+        // Dispatch all data
+        dispatch(setSubscriptionState(subsRes.data));
+        dispatch(setAllNotifications(allNotifRes.data));
+        dispatch(setLastThreeNotifications(lastThreeNotifRes.data));
+        dispatch(setWorkingDaysStats(workingDaysRes.data));
+        dispatch(setMoneyContributions(monthlyExpenseRes.data));
       } catch (error) {
-        console.error("Error fetching subscription:", error);
-        setIsActive(false);
+        console.error("Error loading dashboard:", error);
+        setIsActive(false); // if you still want this behavior
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
+    }
+
+    fetchDashboardData();
+
+    return () => {
+      isMounted = false; // cleanup
     };
-
-    fetchSubscriptions();
-  }, []);
+  }, [user?.id, month, year]);
 
   useEffect(() => {
-    async function handleFetchingNotifications() {
-      try {
-        const res = await axios.get(`${BASE_URL}/notifications/all`);
-        console.log(res.data);
-        const allNotifications = res.data;
-        // dispatching to the redux
-        dispatch(setAllNotifications(allNotifications));
-      } catch (error) {
-        console.error(error);
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setOpen(false);
       }
     }
-    handleFetchingNotifications();
-  }, []); // on mount
 
-  useEffect(() => {
-    async function handleFetchingRecentNotifications() {
-      try {
-        const res = await axios.get(`${BASE_URL}/notifications/lastThree`);
-        console.log("LAST THREE", res.data);
-        const lastThree = res.data;
-        // dispatching to the redux
-        dispatch(setLastThreeNotifications(lastThree));
-      } catch (error) {
-        console.error(error);
-      }
+    if (open) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
     }
-    handleFetchingRecentNotifications();
-  }, []); // on mount
 
-  useEffect(() => {
-    async function fetchWorkingDays() {
-      try {
-        const res = await axios.get(
-          `${BASE_URL}/getWorkingDaysDetails?year=${year}&month=${month + 1}`,
-        );
-        console.log(res.data);
-        dispatch(setWorkingDaysStats(res.data));
-      } catch (error) {
-        console.error(error);
-      }
-    }
-    fetchWorkingDays();
-  }, []);
-
-  useEffect(() => {
-    async function fetchMonthlyExpensePerEmployee() {
-      try {
-        const res = await axios.get(
-          `${BASE_URL}/payroll/monthlyExpensePerEmployee?month=${month + 1}&year=${year}`,
-        );
-        console.log(res.data);
-        dispatch(setMoneyContributions(res.data));
-      } catch (error) {
-        console.error(error);
-      }
-    }
-    fetchMonthlyExpensePerEmployee();
-  }, []);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [open]);
 
   //HANDLING SUBMITTING EVENTS
   // const handleSubmit = async () => {
@@ -210,34 +282,52 @@ export default function EmployeeDashboard() {
   //   }
   // };
 
-  const handleSubmit = async () => {
+  // const handleSubmit = async () => {
+  //   try {
+  //     setFeedbackLoading(true);
+
+  //     const payload = {
+  //       attendance: true,
+  //       hadLunch: true,
+  //     };
+
+  //     const dateStr = new Date().toISOString().split("T")[0]; // e.g., 2025-07-31
+
+  //     const res = await axios.put(
+  //       `${BASE_URL}/userSubscriptionDetails/hadLunch/date/${dateStr}?employeeId=${user?.id}&acknowledgedById=${user?.id}`,
+  //       payload,
+  //       {
+  //         headers: {
+  //           "Content-Type": "application/json", // ✅ optional in Axios but fine to include
+  //         },
+  //       },
+  //     );
+
+  //     toast.success("Lunch marked successfully!");
+  //     setRating("");
+  //     setDescription("");
+  //   } catch (error) {
+  //     console.error("Marking lunch failed:", error);
+  //     const message = error.response?.data?.message || "Something went wrong!";
+  //     toast.error(message);
+  //   } finally {
+  //     setFeedbackLoading(false);
+  //   }
+  // };
+
+  const handleSubmit = async (answer) => {
+    setOpen(false);
+    setFeedbackLoading(true);
+    console.log(answer);
     try {
-      setFeedbackLoading(true);
-
-      const payload = {
-        attendance: true,
-        hadLunch: true,
-      };
-
-      const dateStr = new Date().toISOString().split("T")[0]; // e.g., 2025-07-31
-
-      const res = await axios.put(
-        `${BASE_URL}/userSubscriptionDetails/hadLunch/date/${dateStr}?employeeId=${user?.id}&acknowledgedById=${user?.id}`,
-        payload,
-        {
-          headers: {
-            "Content-Type": "application/json", // ✅ optional in Axios but fine to include
-          },
-        },
+      const response = await axios.put(
+        `${BASE_URL}/userSubscriptionDetails/hadLunch/date/${formatDateToYYYYMMDD(today)}?employeeId=${user?.id}&acknowledgedById=${user?.id}&hadLunch=${answer}`,
+        null,
       );
 
-      toast.success("Lunch marked successfully!");
-      setRating("");
-      setDescription("");
+      console.log("Submission successful:", response.data);
     } catch (error) {
-      console.error("Marking lunch failed:", error);
-      const message = error.response?.data?.message || "Something went wrong!";
-      toast.error(message);
+      console.error("Error submitting attendance:", error);
     } finally {
       setFeedbackLoading(false);
     }
@@ -289,6 +379,13 @@ export default function EmployeeDashboard() {
     return `${diffDays} days ago`;
   }
 
+  function formatDateToYYYYMMDD(dateObj) {
+    const year = dateObj.getFullYear();
+    const month = String(dateObj.getMonth() + 1).padStart(2, "0");
+    const day = String(dateObj.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }
+
   function formatToINR(amount) {
     return new Intl.NumberFormat("en-IN", {
       style: "currency",
@@ -296,7 +393,11 @@ export default function EmployeeDashboard() {
     }).format(amount);
   }
 
-  return (
+  return loading ? (
+    <div className="flex items-center justify-center h-screen">
+      <Loader />
+    </div>
+  ) : (
     <Layout>
       <div className="max-w-7xl mx-auto p-6">
         {/* Top Section: Welcome + Attendance Button */}
@@ -310,17 +411,58 @@ export default function EmployeeDashboard() {
               !
             </h1>
             <p className="text-lg text-gray-600">
-              Here's your lunch subscription overview for this month.
+              Here's your <span className="font-bold">meal subscription</span>{" "}
+              overview for this month.
             </p>
           </div>
 
-          <Button
+          {/* <Button
             onClick={handleSubmit}
             disabled={feedbackLoading}
             className="w-full sm:w-auto"
           >
             {feedbackLoading ? "Submitting..." : "Mark Had Lunch"}
-          </Button>
+          </Button> */}
+          <div
+            ref={dropdownRef}
+            className="relative inline-block text-left w-full sm:w-auto"
+          >
+            <button
+              type="button"
+              onClick={() => setOpen(!open)}
+              disabled={feedbackLoading}
+              className="w-full sm:w-auto px-4 py-2 bg-orange-400 text-white rounded hover:bg-orange-500 focus:outline-none flex items-center justify-center gap-2"
+            >
+              {feedbackLoading ? (
+                "Submitting..."
+              ) : (
+                <>
+                  Had Lunch?
+                  <ChevronDown
+                    className={`w-4 h-4 transition-transform duration-200 ${open ? "rotate-180" : "rotate-0"}`}
+                    strokeWidth={2}
+                  />
+                </>
+              )}
+            </button>
+
+            {open && !feedbackLoading && (
+              <div className="absolute mt-1 w-full sm:w-auto bg-orange-200 border border-orange-500 rounded shadow-lg z-10">
+                <button
+                  onClick={() => handleSubmit(1)}
+                  className="block w-full px-4 py-2 text-left hover:bg-orange-300"
+                >
+                  Yes I had
+                </button>
+                <button
+                  onClick={() => handleSubmit(0)}
+                  className="block w-full px-4 py-2 text-left hover:bg-orange-300"
+                >
+                  No I didn't
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Subscription Overview Cards */}

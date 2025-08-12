@@ -376,7 +376,7 @@ export default function MenuDisplay() {
                   <h4 className="font-medium text-gray-900 mb-2">Daily Cost</h4>
                   <p className="text-2xl font-bold text-gray-900">₹3,360</p>
                   <p className="text-sm text-gray-600">
-                    42 attendees × ₹80 per meal
+                    {dailyAttendeesCount.totalPresent} attendees × ₹100 per meal
                   </p>
                 </div>
                 <div>
@@ -384,7 +384,7 @@ export default function MenuDisplay() {
                     Employee Share
                   </h4>
                   <p className="text-2xl font-bold text-green-600">₹1,680</p>
-                  <p className="text-sm text-gray-600">50% subsidy</p>
+                  <p className="text-sm text-gray-600">35% of total cost</p>
                 </div>
               </div>
             </CardContent>

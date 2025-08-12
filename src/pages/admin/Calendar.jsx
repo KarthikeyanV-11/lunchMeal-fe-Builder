@@ -21,12 +21,14 @@ import { useSelector } from "react-redux";
 import { RefreshCw } from "lucide-react";
 import { useDispatch } from "react-redux";
 import { setNewTemplate } from "../../slice/menuSlice";
+import Loader from "../../components/ui/Loader";
 
 export default function AdminWeekViewCalendar() {
   const BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
   const [weeks, setWeeks] = useState([]);
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [loading, setLoading] = useState(false);
 
   // State for the Weekly Menu Assignment Modal
   const [isWeekMenuModalOpen, setIsWeekMenuModalOpen] = useState(false);
@@ -190,6 +192,7 @@ export default function AdminWeekViewCalendar() {
   useEffect(() => {
     const fetchMonthlyMenu = async () => {
       try {
+        setLoading(true);
         // Step 1: Generate week structure fresh
         const result = [];
         const firstDayOfMonth = new Date(
@@ -306,6 +309,8 @@ export default function AdminWeekViewCalendar() {
         setWeeks(updatedWeeks);
       } catch (error) {
         console.error("Failed to fetch monthly menu:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -687,6 +692,14 @@ export default function AdminWeekViewCalendar() {
     setIsCreateTemplateModalOpen(false);
   };
 
+  // if (loading) {
+  //   return (
+  //     <div className="flex items-center justify-center h-screen">
+  //       <Loader />
+  //     </div>
+  //   );
+  // }
+
   return (
     <Layout>
       <div className="max-w-5xl mx-auto p-6">
@@ -723,156 +736,130 @@ export default function AdminWeekViewCalendar() {
 
         {/* Calendar Grid */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-          <div className="grid grid-cols-6 border-b border-gray-200">
-            <div className="p-4 font-medium text-gray-700 border-r border-gray-200">
-              Week
+          {loading ? (
+            <div className="flex items-center justify-center h-screen">
+              <Loader />
             </div>
-            {dayLabels.map((day) => (
-              <div
-                key={day}
-                className="p-4 font-medium text-gray-700 text-center border-r border-gray-200 last:border-r-0"
-              >
-                {day}
-              </div>
-            ))}
-          </div>
-          {weeks.map((week, index) => {
-            const isAnyDayEditableInWeek = isWeekRangeEditable(week.dates); // Use this for overall week lock
-            return (
-              <div
-                key={index}
-                className={`grid grid-cols-6 border-b border-gray-200 last:border-b-0`}
-              >
-                {/* Week Label Column with onClick for WeekMenuModal */}
-                <div
-                  className={`p-4 border-r border-gray-200 flex flex-col cursor-pointer ${
-                    isAnyDayEditableInWeek ? "hover:bg-gray-50" : "opacity-70"
-                  }`}
-                  onClick={() => {
-                    if (isAnyDayEditableInWeek) {
-                      setSelectedWeekData(week);
-                      setIsWeekMenuModalOpen(true);
-                    } else {
-                      // Replaced alert with console.log
-                      console.log(
-                        "This week has no editable days for menu assignment.",
-                      );
-                    }
-                  }}
-                >
-                  <div className="font-medium text-gray-800 mb-2">
-                    {week.range}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {isAnyDayEditableInWeek ? (
-                      <>
-                        <Edit3 className="w-4 h-4 text-green-500" />
-                        <span className="text-sm text-green-600 font-medium">
-                          Editable
-                        </span>
-                      </>
-                    ) : (
-                      <>
-                        <Lock className="w-4 h-4 text-gray-400" />
-                        <span className="text-sm text-gray-500 font-medium">
-                          Locked
-                        </span>
-                      </>
-                    )}
-                  </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-6 border-b border-gray-200">
+                <div className="p-4 font-medium text-gray-700 border-r border-gray-200">
+                  Week
                 </div>
-
-                {/* Day Columns (Mon–Fri) */}
-                {week.dates.slice(0, 5).map((date, idx) => {
-                  const dayKey = dayLabels[idx]?.toLowerCase(); // e.g., 'monday'
-                  const assignedMenu = week.assignedMenus[dayKey];
-                  const formattedDate = formatRouteDate(date);
-                  const editableDay = isDayEditable(date); // Check individual day's editability
-
-                  return (
-                    // <div
-                    //   key={idx}
-                    //   className={`p-4 border-r border-gray-200 last:border-r-0 text-center hover:bg-gray-50 cursor-pointer ${
-                    //     !editableDay ? "opacity-70" : ""
-                    //   }`}
-                    //   onClick={(e) => {
-                    //     e.stopPropagation();
-                    //     navigate(`/menu/${role}/${formattedDate}`);
-                    //   }}
-                    // >
-                    //   <div className="flex flex-col items-center gap-2">
-                    //     <div className="w-8 h-8 bg-gray-100 rounded flex items-center justify-center">
-                    //       <div className="text-gray-400 text-lg">
-                    //         <UtensilsCrossed />
-                    //       </div>
-                    //     </div>
-
-                    //     <span className="text-sm text-gray-500 mb-1 font-bold">
-                    //       {assignedMenu
-                    //         ? assignedMenu.menuName
-                    //         : "Not assigned"}
-                    //     </span>
-
-                    //     <div className="flex items-center gap-1">
-                    //       {editableDay ? (
-                    //         <Edit3 className="w-3 h-3 text-green-500" />
-                    //       ) : (
-                    //         <Lock className="w-3 h-3 text-gray-400" />
-                    //       )}
-                    //       <span className="text-xs text-gray-500">
-                    //         {editableDay ? "Editable" : "Locked"}
-                    //       </span>
-                    //     </div>
-                    //   </div>
-                    // </div>
+                {dayLabels.map((day) => (
+                  <div
+                    key={day}
+                    className="p-4 font-medium text-gray-700 text-center border-r border-gray-200 last:border-r-0"
+                  >
+                    {day}
+                  </div>
+                ))}
+              </div>
+              {weeks.map((week, index) => {
+                const isAnyDayEditableInWeek = isWeekRangeEditable(week.dates); // Use this for overall week lock
+                return (
+                  <div
+                    key={index}
+                    className={`grid grid-cols-6 border-b border-gray-200 last:border-b-0`}
+                  >
+                    {/* Week Label Column with onClick for WeekMenuModal */}
                     <div
-                      key={idx}
-                      className={`relative p-4 border-r border-gray-200 last:border-r-0 text-center hover:bg-gray-50 cursor-pointer ${
-                        !editableDay ? "opacity-70" : ""
+                      className={`p-4 border-r border-gray-200 flex flex-col cursor-pointer ${
+                        isAnyDayEditableInWeek
+                          ? "hover:bg-gray-50"
+                          : "opacity-70"
                       }`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigate(`/menu/${role}/${formattedDate}`);
+                      onClick={() => {
+                        if (isAnyDayEditableInWeek) {
+                          setSelectedWeekData(week);
+                          setIsWeekMenuModalOpen(true);
+                        } else {
+                          console.log(
+                            "This week has no editable days for menu assignment.",
+                          );
+                        }
                       }}
                     >
-                      {/* Small date in top-right */}
-                      <span className="absolute top-1 right-2 text-xs font-semibold text-gray-800">
-                        {new Date(date).toLocaleDateString("en-GB", {
-                          day: "2-digit",
-                          month: "short",
-                        })}
-                      </span>
-
-                      <div className="mt-3 flex flex-col items-center gap-2">
-                        <div className="w-8 h-8 bg-gray-100 rounded flex items-center justify-center">
-                          <div className="text-gray-400 text-lg mt-4">
-                            <UtensilsCrossed />
-                          </div>
-                        </div>
-
-                        <span className="text-sm text-orange-400 mb-1 font-bold">
-                          {assignedMenu
-                            ? assignedMenu.menuName
-                            : "Not assigned"}
-                        </span>
-
-                        <div className="flex items-center gap-1">
-                          {editableDay ? (
-                            <Edit3 className="w-3 h-3 text-green-500" />
-                          ) : (
-                            <Lock className="w-3 h-3 text-gray-400" />
-                          )}
-                          <span className="text-xs font-semibold text-gray-800">
-                            {editableDay ? "Editable" : "Locked"}
-                          </span>
-                        </div>
+                      <div className="font-medium text-gray-800 mb-2">
+                        {week.range}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {isAnyDayEditableInWeek ? (
+                          <>
+                            <Edit3 className="w-4 h-4 text-green-500" />
+                            <span className="text-sm text-green-600 font-medium">
+                              Editable
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            <Lock className="w-4 h-4 text-gray-400" />
+                            <span className="text-sm text-gray-500 font-medium">
+                              Locked
+                            </span>
+                          </>
+                        )}
                       </div>
                     </div>
-                  );
-                })}
-              </div>
-            );
-          })}
+
+                    {/* Day Columns (Mon–Fri) */}
+                    {week.dates.slice(0, 5).map((date, idx) => {
+                      const dayKey = dayLabels[idx]?.toLowerCase(); // e.g., 'monday'
+                      const assignedMenu = week.assignedMenus[dayKey];
+                      const formattedDate = formatRouteDate(date);
+                      const editableDay = isDayEditable(date); // Check individual day's editability
+
+                      return (
+                        <div
+                          key={idx}
+                          className={`relative p-4 border-r border-gray-200 last:border-r-0 text-center hover:bg-gray-50 cursor-pointer ${
+                            !editableDay ? "opacity-70" : ""
+                          }`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/menu/${role}/${formattedDate}`);
+                          }}
+                        >
+                          {/* Small date in top-right */}
+                          <span className="absolute top-1 right-2 text-xs font-semibold text-gray-800">
+                            {new Date(date).toLocaleDateString("en-GB", {
+                              day: "2-digit",
+                              month: "short",
+                            })}
+                          </span>
+
+                          <div className="mt-3 flex flex-col items-center gap-2">
+                            <div className="w-8 h-8 bg-gray-100 rounded flex items-center justify-center">
+                              <div className="text-gray-400 text-lg mt-4">
+                                <UtensilsCrossed />
+                              </div>
+                            </div>
+
+                            <span className="text-sm text-orange-400 mb-1 font-bold">
+                              {assignedMenu
+                                ? assignedMenu.menuName
+                                : "Not assigned"}
+                            </span>
+
+                            <div className="flex items-center gap-1">
+                              {editableDay ? (
+                                <Edit3 className="w-3 h-3 text-green-500" />
+                              ) : (
+                                <Lock className="w-3 h-3 text-gray-400" />
+                              )}
+                              <span className="text-xs font-semibold text-gray-800">
+                                {editableDay ? "Editable" : "Locked"}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })}
+            </>
+          )}
         </div>
 
         {/* <div className="flex justify-center items-center">

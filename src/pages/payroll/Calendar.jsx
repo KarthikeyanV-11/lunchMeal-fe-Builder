@@ -190,7 +190,7 @@ export default function PayrollCalendar() {
             Financial Calendar
           </h1>
           <p className="text-lg text-gray-600">
-            View lunch menus and financial data for any date.
+            View meal and financial data for any date.
           </p>
         </div>
 

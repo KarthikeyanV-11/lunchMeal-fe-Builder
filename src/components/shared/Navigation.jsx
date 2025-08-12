@@ -134,7 +134,36 @@ export const Navigation = () => {
             <Button
               variant="ghost"
               size="sm"
-              onClick={handleLogout}
+              onClick={() => {
+                toast.custom((t) => (
+                  <div className="flex items-center justify-between w-full max-w-sm p-4 bg-orange-50 border border-orange-200 rounded-lg shadow-lg animate-enter">
+                    <div className="flex flex-col">
+                      <span className="text-sm font-semibold text-orange-700">
+                        Are you sure you want to logout?
+                      </span>
+                    </div>
+                    <div className="flex items-center space-x-2 ml-4">
+                      <button
+                        onClick={() => {
+                          toast.dismiss(t.id); // Close toast immediately
+                          setTimeout(() => {
+                            handleLogout(); // Then call logout logic
+                          }, 0);
+                        }}
+                        className="bg-orange-600 text-white text-xs px-3 py-1 rounded hover:bg-orange-700 transition"
+                      >
+                        Yes
+                      </button>
+                      <button
+                        onClick={() => toast.dismiss(t.id)} // Just close toast on No
+                        className="text-orange-600 text-xs px-3 py-1 border border-orange-300 rounded hover:bg-orange-100 transition"
+                      >
+                        No
+                      </button>
+                    </div>
+                  </div>
+                ));
+              }}
               className="flex items-center space-x-1"
             >
               <LogOut className="h-4 w-4" />

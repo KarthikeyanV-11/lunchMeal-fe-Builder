@@ -18,9 +18,13 @@ import {
 } from "../../slice/employeeSlice";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import Loader from "../../components/ui/Loader";
 
 export default function PayrollDashboard() {
   const BASE_URL = import.meta.env.VITE_BACKEND_URL;
+  const [avgCost, setAvgCost] = useState(0);
+
+  const [loading, setLoading] = useState(false);
 
   const today = new Date();
   const year = today.getFullYear();
@@ -53,104 +57,164 @@ export default function PayrollDashboard() {
 
   //percentOfsubscribedEmployeesFromTotal
   const [percentage, setPecentage] = useState(0);
-  useEffect(() => {
-    async function fetchpercentOfsubscribedEmployees() {
-      const res = await axios(
-        `${BASE_URL}/subscription/subscriptionPercentage`,
-      );
-      const percentage = res.data.percentage;
-      setPecentage(percentage);
-    }
-    fetchpercentOfsubscribedEmployees();
-  }, []);
+  // useEffect(() => {
+  //   async function fetchpercentOfsubscribedEmployees() {
+  //     const res = await axios(
+  //       `${BASE_URL}/subscription/subscriptionPercentage`,
+  //     );
+  //     const percentage = res.data.percentage;
+  //     setPecentage(percentage);
+  //   }
+  //   fetchpercentOfsubscribedEmployees();
+  // }, []);
 
-  //USE EFFECTS
+  // //USE EFFECTS
 
-  //monthly expense
+  // //monthly expense
+  // useEffect(() => {
+  //   async function fetchMonthlyExpense() {
+  //     try {
+  //       const res = await axios.get(
+  //         `${BASE_URL}/payroll/totalMonthlyExpense?month=${month + 1}&year=${year}`,
+  //       );
+  //       console.log(res.data);
+  //       dispatch(setTotalMonthlyContributions(res.data));
+  //     } catch (error) {
+  //       console.error(error);
+  //     }
+  //   }
+  //   fetchMonthlyExpense();
+  // }, []);
+
+  // //working days
+  // useEffect(() => {
+  //   async function fetchWorkingDays() {
+  //     try {
+  //       const res = await axios.get(
+  //         `${BASE_URL}/getWorkingDaysDetails?year=${year}&month=${month + 1}`,
+  //       );
+  //       console.log(res.data);
+  //       dispatch(setWorkingDaysStats(res.data));
+  //     } catch (error) {
+  //       console.error(error);
+  //     }
+  //   }
+  //   fetchWorkingDays();
+  // }, []);
+
+  // //all employees
+  // useEffect(() => {
+  //   const fetchEmployees = async () => {
+  //     try {
+  //       const response = await axios.get(
+  //         `${BASE_URL}/employee/getAllEmployees`, // url for fetching all the employee details
+  //       );
+
+  //       const employeesArray = response.data;
+  //       // console.log(employeesArray[0]); getting the first user
+
+  //       dispatch(setEmployees(employeesArray));
+  //     } catch (error) {
+  //       console.error("Error fetching employees:", error.message);
+  //     }
+  //   };
+
+  //   fetchEmployees();
+  // }, [dispatch]);
+
+  // //subscribed employees
+  // useEffect(() => {
+  //   async function fetchTotalSubscribers() {
+  //     try {
+  //       const res = await axios.get(
+  //         `${BASE_URL}/subscription/active?month=${month + 1}&year=${year}`,
+  //       );
+  //       dispatch(setSubscribedEmployees(res.data));
+  //       console.log(res.data);
+  //     } catch (error) {
+  //       console.error(error);
+  //     }
+  //   }
+  //   fetchTotalSubscribers();
+  // }, [dispatch]);
+
+  // //avg daily cost
+  // useEffect(() => {
+  //   async function fetchAvgDailyCost() {
+  //     try {
+  //       const res = await axios.get(
+  //         `${BASE_URL}/payroll/avgDailyCost?month=${month + 1}&year=${year}`,
+  //       );
+  //       console.log(res);
+  //       setAvgCost(res.data.avgManagementContribution);
+  //       // console.log(res.data);
+  //     } catch (error) {
+  //       console.error(error);
+  //     }
+  //   }
+  //   fetchAvgDailyCost();
+  // }, []);
+
   useEffect(() => {
-    async function fetchMonthlyExpense() {
+    let isMounted = true; // avoid state updates if unmounted
+
+    async function fetchDashboardData() {
+      setLoading(true); // start loader
       try {
-        const res = await axios.get(
-          `${BASE_URL}/payroll/totalMonthlyExpense?month=${month + 1}&year=${year}`,
+        const [
+          percentRes,
+          monthlyExpenseRes,
+          workingDaysRes,
+          employeesRes,
+          subscribedEmployeesRes,
+          avgDailyCostRes,
+        ] = await Promise.all([
+          axios.get(`${BASE_URL}/subscription/subscriptionPercentage`),
+          axios.get(
+            `${BASE_URL}/payroll/totalMonthlyExpense?month=${month + 1}&year=${year}`,
+          ),
+          axios.get(
+            `${BASE_URL}/getWorkingDaysDetails?year=${year}&month=${month + 1}`,
+          ),
+          axios.get(`${BASE_URL}/employee/getAllEmployees`),
+          axios.get(
+            `${BASE_URL}/subscription/active?month=${month + 1}&year=${year}`,
+          ),
+          axios.get(
+            `${BASE_URL}/payroll/avgDailyCost?month=${month + 1}&year=${year}`,
+          ),
+        ]);
+
+        if (!isMounted) return;
+
+        setPecentage(percentRes.data.percentage);
+        dispatch(setTotalMonthlyContributions(monthlyExpenseRes.data));
+        dispatch(setWorkingDaysStats(workingDaysRes.data));
+        dispatch(setEmployees(employeesRes.data));
+        dispatch(setSubscribedEmployees(subscribedEmployeesRes.data));
+        setAvgCost(avgDailyCostRes.data.avgManagementContribution);
+
+        // Optional logs
+        console.log(
+          monthlyExpenseRes.data,
+          workingDaysRes.data,
+          employeesRes.data,
+          subscribedEmployeesRes.data,
+          avgDailyCostRes.data,
         );
-        console.log(res.data);
-        dispatch(setTotalMonthlyContributions(res.data));
       } catch (error) {
-        console.error(error);
+        console.error("Error fetching dashboard data:", error);
+      } finally {
+        if (isMounted) setLoading(false); // stop loader
       }
     }
-    fetchMonthlyExpense();
-  }, []);
 
-  //working days
-  useEffect(() => {
-    async function fetchWorkingDays() {
-      try {
-        const res = await axios.get(
-          `${BASE_URL}/getWorkingDaysDetails?year=${year}&month=${month + 1}`,
-        );
-        console.log(res.data);
-        dispatch(setWorkingDaysStats(res.data));
-      } catch (error) {
-        console.error(error);
-      }
-    }
-    fetchWorkingDays();
-  }, []);
+    fetchDashboardData();
 
-  //all employees
-  useEffect(() => {
-    const fetchEmployees = async () => {
-      try {
-        const response = await axios.get(
-          `${BASE_URL}/employee/getAllEmployees`, // url for fetching all the employee details
-        );
-
-        const employeesArray = response.data;
-        // console.log(employeesArray[0]); getting the first user
-
-        dispatch(setEmployees(employeesArray));
-      } catch (error) {
-        console.error("Error fetching employees:", error.message);
-      }
+    return () => {
+      isMounted = false;
     };
-
-    fetchEmployees();
-  }, [dispatch]);
-
-  //subscribed employees
-  useEffect(() => {
-    async function fetchTotalSubscribers() {
-      try {
-        const res = await axios.get(
-          `${BASE_URL}/subscription/active?month=${month + 1}&year=${year}`,
-        );
-        dispatch(setSubscribedEmployees(res.data));
-        console.log(res.data);
-      } catch (error) {
-        console.error(error);
-      }
-    }
-    fetchTotalSubscribers();
-  }, [dispatch]);
-
-  //avg daily cost
-  const [avgCost, setAvgCost] = useState(0);
-  useEffect(() => {
-    async function fetchAvgDailyCost() {
-      try {
-        const res = await axios.get(
-          `${BASE_URL}/payroll/avgDailyCost?month=${month + 1}&year=${year}`,
-        );
-        console.log(res);
-        setAvgCost(res.data.avgManagementContribution);
-        // console.log(res.data);
-      } catch (error) {
-        console.error(error);
-      }
-    }
-    fetchAvgDailyCost();
-  }, []);
+  }, [dispatch, month, year]);
 
   function formatToINR(amount) {
     return new Intl.NumberFormat("en-IN", {
@@ -159,7 +223,11 @@ export default function PayrollDashboard() {
     }).format(amount);
   }
 
-  return (
+  return loading ? (
+    <div className="flex items-center justify-center h-screen">
+      <Loader />
+    </div>
+  ) : (
     <Layout>
       <div className="max-w-7xl mx-auto p-6">
         {/* Welcome Section */}
@@ -168,7 +236,8 @@ export default function PayrollDashboard() {
             Payroll Dashboard
           </h1>
           <p className="text-lg text-gray-600">
-            Manage payroll exports and financial reconciliation.
+            Manage <span className="font-bold">accounting</span> exports and
+            financial reconciliation.
           </p>
         </div>
 

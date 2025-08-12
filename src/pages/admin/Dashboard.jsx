@@ -34,6 +34,7 @@ import {
   setLastThreeRatings,
   setMonthlyAvgRating,
 } from "../../slice/menuFeedback";
+import Loader from "../../components/ui/Loader";
 
 //uses employeeSlice redux.
 //backend api format: [{},{}...{}]
@@ -71,8 +72,9 @@ export default function AdminDashboard() {
 
   //FINDING OUT THE TOTAL SUBSCRIBED EMPLOYEES
   const subscribedEmployees = useSelector(
-    (state) => state.employee.subscribedEmployees.length,
+    (state) => state.employee.subscribedEmployees,
   );
+  console.log(subscribedEmployees);
   // console.log(employeeStrength[0]);
 
   const monthlyContribution = useSelector(
@@ -105,100 +107,177 @@ export default function AdminDashboard() {
   //   fetchEmployees();
   // }, [dispatch]);
 
+  // useEffect(() => {
+  //   async function fetchRatings() {
+  //     try {
+  //       setLoading(true); // show loader
+  //       const res = await axios.get(`${BASE_URL}/rating/all`);
+  //       const allRatingsCumFeedback = res.data;
+  //       const lastThree = allRatingsCumFeedback.slice(0, 3);
+  //       dispatch(setAllRatings(allRatingsCumFeedback));
+  //       dispatch(setLastThreeRatings(lastThree));
+  //     } catch (error) {
+  //       console.error(error);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   }
+  //   fetchRatings();
+  // }, [dispatch]);
+
+  // useEffect(() => {
+  //   async function fetchTotalSubscribers() {
+  //     try {
+  //       setLoading(true);
+  //       const res = await axios.get(
+  //         `${BASE_URL}/subscription/active?month=${month + 1}&year=${year}`,
+  //       );
+  //       console.log(res);
+  //       dispatch(setSubscribedEmployees(res.data));
+  //       console.log(res.data);
+  //     } catch (error) {
+  //       console.error(error);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   }
+  //   fetchTotalSubscribers();
+  // }, [dispatch]);
+
+  // useEffect(() => {
+  //   async function fetchMonthlyExpensePerEmployee() {
+  //     try {
+  //       setLoading(true);
+  //       const res = await axios.get(
+  //         `${BASE_URL}/payroll/monthlyExpensePerEmployee?month=${month + 1}&year=${year}`,
+  //       );
+  //       console.log(res.data);
+  //       dispatch(setMoneyContributions(res.data));
+  //     } catch (error) {
+  //       console.error(error);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   }
+  //   fetchMonthlyExpensePerEmployee();
+  // }, []);
+
+  //monthly expense
+  // useEffect(() => {
+  //   async function fetchTotalMonthlyExpense() {
+  //     try {
+  //       setLoading(true);
+  //       const res = await axios.get(
+  //         `${BASE_URL}/payroll/totalMonthlyExpense?month=${month}&year=${year}`,
+  //       );
+  //       console.log(res.data);
+  //       dispatch(setTotalMonthlyContributions(res.data));
+  //     } catch (error) {
+  //       console.error(error);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   }
+  //   fetchTotalMonthlyExpense();
+  // }, []);
+
+  // useEffect(() => {
+  //   async function fetchMonthyAvgRating() {
+  //     try {
+  //       setLoading(true);
+  //       const res = await axios.get(
+  //         `${BASE_URL}/rating/avgMonthlyRating?month=${month}&year=${year}`,
+  //       );
+  //       console.log(res.data);
+  //       dispatch(setMonthlyAvgRating(res.data));
+  //     } catch (error) {
+  //       console.error(error);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   }
+  //   fetchMonthyAvgRating();
+  // }, [dispatch]);
+
+  // useEffect(() => {
+  //   async function fetchSubscriptionWindowOpen() {
+  //     try {
+  //       setLoading(true);
+  //       const res = await axios.get(
+  //         `${BASE_URL}/subscription/subscriptionWindow`,
+  //       );
+
+  //       const remainingDays = res.data.status;
+  //       setShowSubscription(remainingDays);
+
+  //       console.log(showSubscription);
+  //     } catch (error) {
+  //       console.log(error);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   }
+  //   fetchSubscriptionWindowOpen();
+  // }, []);
+
   useEffect(() => {
-    async function fetchRatings() {
+    async function fetchAllData() {
+      setLoading(true);
       try {
-        const res = await axios.get(`${BASE_URL}/rating/all`);
-        const allRatingsCumFeedback = res.data;
+        const [
+          ratingsRes,
+          subscribersRes,
+          monthlyExpensePerEmployeeRes,
+          totalMonthlyExpenseRes,
+          monthlyAvgRatingRes,
+          subscriptionWindowRes,
+        ] = await Promise.all([
+          axios.get(`${BASE_URL}/rating/all`),
+          axios.get(
+            `${BASE_URL}/subscription/activeCount?month=${month + 1}&year=${year}`,
+          ),
+          axios.get(
+            `${BASE_URL}/payroll/monthlyExpensePerEmployee?month=${month + 1}&year=${year}`,
+          ),
+          axios.get(
+            `${BASE_URL}/payroll/totalMonthlyExpense?month=${month}&year=${year}`,
+          ),
+          axios.get(
+            `${BASE_URL}/rating/avgMonthlyRating?month=${month}&year=${year}`,
+          ),
+          axios.get(`${BASE_URL}/subscription/subscriptionWindow`),
+        ]);
+
+        // Ratings
+        const allRatingsCumFeedback = ratingsRes.data;
         const lastThree = allRatingsCumFeedback.slice(0, 3);
         dispatch(setAllRatings(allRatingsCumFeedback));
         dispatch(setLastThreeRatings(lastThree));
+
+        // Subscribers
+        console.log(subscribersRes);
+        dispatch(setSubscribedEmployees(subscribersRes.data));
+
+        // Monthly Expense Per Employee
+        dispatch(setMoneyContributions(monthlyExpensePerEmployeeRes.data));
+
+        // Total Monthly Expense
+        dispatch(setTotalMonthlyContributions(totalMonthlyExpenseRes.data));
+
+        // Monthly Avg Rating
+        dispatch(setMonthlyAvgRating(monthlyAvgRatingRes.data));
+
+        // Subscription Window
+        setShowSubscription(subscriptionWindowRes.data.status);
       } catch (error) {
         console.error(error);
+      } finally {
+        setLoading(false);
       }
     }
-    fetchRatings();
-  }, [dispatch]);
 
-  useEffect(() => {
-    async function fetchTotalSubscribers() {
-      try {
-        const res = await axios.get(
-          `${BASE_URL}/subscription/active?month=${month + 1}&year=${year}`,
-        );
-        console.log(res);
-        dispatch(setSubscribedEmployees(res.data));
-        console.log(res.data);
-      } catch (error) {
-        console.error(error);
-      }
-    }
-    fetchTotalSubscribers();
-  }, [dispatch]);
-
-  useEffect(() => {
-    async function fetchMonthlyExpensePerEmployee() {
-      try {
-        const res = await axios.get(
-          `${BASE_URL}/payroll/monthlyExpensePerEmployee?month=${month + 1}&year=${year}`,
-        );
-        console.log(res.data);
-        dispatch(setMoneyContributions(res.data));
-      } catch (error) {
-        console.error(error);
-      }
-    }
-    fetchMonthlyExpensePerEmployee();
-  }, []);
-
-  //monthly expense
-  useEffect(() => {
-    async function fetchTotalMonthlyExpense() {
-      try {
-        const res = await axios.get(
-          `${BASE_URL}/payroll/totalMonthlyExpense?month=${month}&year=${year}`,
-        );
-        console.log(res.data);
-        dispatch(setTotalMonthlyContributions(res.data));
-      } catch (error) {
-        console.error(error);
-      }
-    }
-    fetchTotalMonthlyExpense();
-  }, []);
-
-  useEffect(() => {
-    async function fetchMonthyAvgRating() {
-      try {
-        const res = await axios.get(
-          `${BASE_URL}/rating/avgMonthlyRating?month=${month}&year=${year}`,
-        );
-        console.log(res.data);
-        dispatch(setMonthlyAvgRating(res.data));
-      } catch (error) {
-        console.error(error);
-      }
-    }
-    fetchMonthyAvgRating();
-  }, [dispatch]);
-
-  useEffect(() => {
-    async function fetchSubscriptionWindowOpen() {
-      try {
-        const res = await axios.get(
-          `${BASE_URL}/subscription/subscriptionWindow`,
-        );
-
-        const remainingDays = res.data.status;
-        setShowSubscription(remainingDays);
-
-        console.log(showSubscription);
-      } catch (error) {
-        console.log(error);
-      }
-    }
-    fetchSubscriptionWindowOpen();
-  }, []);
+    fetchAllData();
+  }, [dispatch, month, year]);
 
   //UTILITY FUNCTIONS
   function renderStars(rating) {
@@ -260,7 +339,11 @@ export default function AdminDashboard() {
     }
   };
 
-  return (
+  return loading ? (
+    <div className="flex items-center justify-center h-screen">
+      <Loader />
+    </div>
+  ) : (
     <Layout>
       <div className="max-w-7xl mx-auto p-6">
         {/* Welcome Section */}
@@ -269,7 +352,8 @@ export default function AdminDashboard() {
             Admin Dashboard
           </h1>
           <p className="text-lg text-gray-600">
-            Manage lunch subscriptions and employee preferences.
+            Manage <span className="font-bold">meal subscriptions</span> and
+            employee preferences.
           </p>
         </div>
 
@@ -283,9 +367,23 @@ export default function AdminDashboard() {
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{subscribedEmployees}</div>
-              <p className="text-xs text-muted-foreground">
-                +12 from last month
+              <div className="text-2xl font-bold">
+                {subscribedEmployees.count}
+              </div>
+              <p
+                className={`text-sm font-semibold ${
+                  subscribedEmployees.comparedCount > 0
+                    ? "text-green-500"
+                    : subscribedEmployees.comparedCount < 0
+                      ? "text-red-500"
+                      : "text-gray-500"
+                }`}
+              >
+                {subscribedEmployees.comparedCount > 0
+                  ? `${subscribedEmployees.comparedCount} newly subscribed`
+                  : subscribedEmployees.comparedCount < 0
+                    ? `${Math.abs(subscribedEmployees.comparedCount)} unsubscribed`
+                    : "No one unsubscribed"}
               </p>
             </CardContent>
           </Card>
@@ -345,7 +443,11 @@ export default function AdminDashboard() {
                 {monthlyAvgRating.avgRating?.toFixed(1)}
               </div>
               <p className="text-xs text-muted-foreground">
-                Based on {monthlyAvgRating.count} feedback
+                Based on{" "}
+                <span className="font-semibold text-gray-700">
+                  {monthlyAvgRating.count}
+                </span>{" "}
+                feedback
               </p>
             </CardContent>
           </Card>
