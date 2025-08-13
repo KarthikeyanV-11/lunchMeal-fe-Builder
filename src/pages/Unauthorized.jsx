@@ -28,7 +28,7 @@ export default function Unauthorized() {
             appropriate role.
           </p>
           <Button onClick={() => navigate("/")} className="w-full">
-            Go to Login
+            Go to Dashboard
           </Button>
         </CardContent>
       </Card>

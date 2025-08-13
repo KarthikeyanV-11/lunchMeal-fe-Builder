@@ -53,19 +53,36 @@ const menuSlice = createSlice({
     monthlyMenus: {}, // Monthly menus as before
   },
   reducers: {
-    setNewTemplate(state, action) {
-      const newTemplate = action.payload;
-      const alreadyExists = state.availableTemplates.some(
-        (template) => template.id === newTemplate.id,
+    // setNewTemplate(state, action) {
+    //   const newTemplate = action.payload;
+    //   const alreadyExists = state.availableTemplates.some(
+    //     (template) => template.id === newTemplate.id,
+    //   );
+    //   if (!alreadyExists) {
+    //     state.availableTemplates.push(newTemplate);
+    //   }
+    // },
+    // clearSingleTemplate(state, action) {
+    //   const id = action.payload;
+    //   state.availableTemplates = state.availableTemplates.filter(
+    //     (curr) => curr.id !== id,
+    //   );
+    // },
+    setNewTemplate: (state, action) => {
+      state.availableTemplates.push(action.payload);
+    },
+    updateTemplate: (state, action) => {
+      const updated = action.payload;
+      const index = state.availableTemplates.findIndex(
+        (t) => t.id === updated.id,
       );
-      if (!alreadyExists) {
-        state.availableTemplates.push(newTemplate);
+      if (index !== -1) {
+        state.availableTemplates[index] = updated;
       }
     },
-    clearSingleTemplate(state, action) {
-      const id = action.payload;
+    deleteTemplate: (state, action) => {
       state.availableTemplates = state.availableTemplates.filter(
-        (curr) => curr.id !== id,
+        (t) => t.id !== action.payload,
       );
     },
     setFetchedMenu(state, action) {
@@ -86,7 +103,8 @@ const menuSlice = createSlice({
 export default menuSlice.reducer;
 export const {
   setNewTemplate,
-  clearSingleTemplate,
+  updateTemplate,
+  deleteTemplate,
   setFetchedMenu,
   setFetchedDayMenu, // export new action
   setMonthlyMenus,

@@ -25,6 +25,7 @@ import { toast } from "react-hot-toast";
 import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import { setDailyAttendeesCountStats } from "../../slice/employeeSlice";
+import { GiMeal } from "react-icons/gi";
 
 export default function MenuDisplay() {
   const BASE_URL = import.meta.env.VITE_BACKEND_URL;
@@ -103,9 +104,24 @@ export default function MenuDisplay() {
     fetchDailyAttendeesStats();
   }, [selectedDate]);
 
+  useEffect(() => {
+    async function fetchDailyStatus() {
+      try {
+        const res = await axios.get(
+          `${BASE_URL}/userSubscriptionDetails/attendanceDetails/employee/${employeeId}?date=${selectedDate}`,
+        );
+        setAttendanceStatus(res.data.status);
+        console.log(res.data);
+      } catch (error) {
+        console.error("Error fetching attendance stats:", error);
+      }
+    }
+    fetchDailyStatus();
+  }, [selectedDate]);
+
   const handleAttendanceChange = async () => {
     if (!canMarkAttendance) {
-      toast.error("🚫 Lunch attendance closed for this date");
+      toast.error(" Lunch attendance closed for this date");
       return;
     }
 
@@ -121,7 +137,12 @@ export default function MenuDisplay() {
 
       // Optionally update state based on response
       setAttendanceStatus(false);
-      toast.success("🍽️ You have successfully marked as skipping lunch!");
+      toast.success(
+        <span className="">
+          <GiMeal size={20} className="inline" /> You have successfully marked
+          as skipping lunch!
+        </span>,
+      );
     } catch (error) {
       console.error("Error skipping lunch:", error);
       toast.error(error.response.data.message);
@@ -180,8 +201,22 @@ export default function MenuDisplay() {
             className="flex items-center space-x-2"
           >
             <ArrowLeft className="h-4 w-4" />
-            <span>Back to Calendar</span>
+            <span>Back to Calendar </span>
           </Button>
+          <span
+            className={`px-3 py-1 rounded-full text-sm font-medium 
+    ${
+      attendanceStatus === "TAKEN"
+        ? "bg-green-100 text-green-800"
+        : attendanceStatus === "ABSENT"
+          ? "bg-red-100 text-red-800"
+          : attendanceStatus === "SKIPPED"
+            ? "bg-orange-200 text-orange-800"
+            : "bg-gray-100 text-gray-800"
+    }`}
+          >
+            {attendanceStatus}
+          </span>
 
           {/* <Badge variant="outline" className="text-lg px-3 py-1">
             {formattedDate}

@@ -43,6 +43,7 @@ export default function EmployeeDashboard() {
 
   const [submittedRating, setSubmittedRating] = useState("");
   const [submittedDescription, setSubmittedDescription] = useState("");
+  const [status, setStatus] = useState(null);
 
   const [showModal, setShowModal] = useState(false);
   const [open, setOpen] = useState(false);
@@ -179,10 +180,14 @@ export default function EmployeeDashboard() {
 
   useEffect(() => {
     let isMounted = true; // avoid state updates if unmounted
+    let midnightTimer; // declare here so both fetch & cleanup can access it
 
     async function fetchDashboardData() {
+      if (!isMounted) return;
       setLoading(true);
       try {
+        const todayDate = formatDateToYYYYMMDD(new Date());
+
         // Run all API calls in parallel
         const [
           subsRes,
@@ -190,6 +195,7 @@ export default function EmployeeDashboard() {
           lastThreeNotifRes,
           workingDaysRes,
           monthlyExpenseRes,
+          lunchStatusRes,
         ] = await Promise.all([
           axios.get(
             `${BASE_URL}/subscription/activeEmployee/${user?.id}?month=${month + 1}&year=${year}`,
@@ -202,6 +208,9 @@ export default function EmployeeDashboard() {
           axios.get(
             `${BASE_URL}/payroll/monthlyExpensePerEmployee?month=${month + 1}&year=${year}`,
           ),
+          axios.get(
+            `${BASE_URL}/userSubscriptionDetails/attendanceDetails/employee/${user?.id}?date=${todayDate}`,
+          ),
         ]);
 
         if (!isMounted) return;
@@ -212,6 +221,7 @@ export default function EmployeeDashboard() {
         dispatch(setLastThreeNotifications(lastThreeNotifRes.data));
         dispatch(setWorkingDaysStats(workingDaysRes.data));
         dispatch(setMoneyContributions(monthlyExpenseRes.data));
+        setStatus(lunchStatusRes.data?.status);
       } catch (error) {
         console.error("Error loading dashboard:", error);
         setIsActive(false); // if you still want this behavior
@@ -220,10 +230,27 @@ export default function EmployeeDashboard() {
       }
     }
 
+    function scheduleMidnightRefresh() {
+      const now = new Date();
+      const tomorrow = new Date(now);
+      tomorrow.setDate(now.getDate() + 1);
+      tomorrow.setHours(0, 0, 0, 0);
+      const msUntilMidnight = tomorrow - now;
+
+      midnightTimer = setTimeout(() => {
+        fetchDashboardData();
+        scheduleMidnightRefresh(); // reschedule for the next day
+      }, msUntilMidnight);
+    }
+
+    // Initial fetch
     fetchDashboardData();
+    // Schedule next refresh
+    scheduleMidnightRefresh();
 
     return () => {
       isMounted = false; // cleanup
+      clearTimeout(midnightTimer);
     };
   }, [user?.id, month, year]);
 
@@ -319,6 +346,7 @@ export default function EmployeeDashboard() {
     setOpen(false);
     setFeedbackLoading(true);
     console.log(answer);
+
     try {
       const response = await axios.put(
         `${BASE_URL}/userSubscriptionDetails/hadLunch/date/${formatDateToYYYYMMDD(today)}?employeeId=${user?.id}&acknowledgedById=${user?.id}&hadLunch=${answer}`,
@@ -326,11 +354,19 @@ export default function EmployeeDashboard() {
       );
 
       console.log("Submission successful:", response.data);
+      setStatus(answer === 1 ? "TAKEN" : "SKIPPED");
     } catch (error) {
       console.error("Error submitting attendance:", error);
     } finally {
       setFeedbackLoading(false);
     }
+  };
+
+  const statusColors = {
+    ABSENT: "bg-red-100 text-red-700 border border-red-300",
+    TAKEN: "bg-green-100 text-green-700 border border-green-300",
+    YET_TO_TAKE: "bg-yellow-100 text-yellow-700 border border-yellow-300",
+    SKIPPED: "bg-gray-100 text-gray-700 border border-gray-300",
   };
 
   const handleRatingSubmit = async () => {
@@ -427,40 +463,55 @@ export default function EmployeeDashboard() {
             ref={dropdownRef}
             className="relative inline-block text-left w-full sm:w-auto"
           >
-            <button
-              type="button"
-              onClick={() => setOpen(!open)}
-              disabled={feedbackLoading}
-              className="w-full sm:w-auto px-4 py-2 bg-orange-400 text-white rounded hover:bg-orange-500 focus:outline-none flex items-center justify-center gap-2"
-            >
-              {feedbackLoading ? (
-                "Submitting..."
-              ) : (
-                <>
-                  Had Lunch?
-                  <ChevronDown
-                    className={`w-4 h-4 transition-transform duration-200 ${open ? "rotate-180" : "rotate-0"}`}
-                    strokeWidth={2}
-                  />
-                </>
-              )}
-            </button>
+            {status === "YET_TO_ACKNOWLEDGE" ? (
+              <>
+                <button
+                  type="button"
+                  onClick={() => setOpen(!open)}
+                  disabled={feedbackLoading}
+                  className="w-full sm:w-auto px-4 py-2 bg-orange-400 text-white rounded hover:bg-orange-500 focus:outline-none flex items-center justify-center gap-2 shadow-sm"
+                >
+                  {feedbackLoading ? (
+                    "Submitting..."
+                  ) : (
+                    <>
+                      Had Lunch?
+                      <ChevronDown
+                        className={`w-4 h-4 transition-transform duration-200 ${
+                          open ? "rotate-180" : "rotate-0"
+                        }`}
+                        strokeWidth={2}
+                      />
+                    </>
+                  )}
+                </button>
 
-            {open && !feedbackLoading && (
-              <div className="absolute mt-1 w-full sm:w-auto bg-orange-200 border border-orange-500 rounded shadow-lg z-10">
-                <button
-                  onClick={() => handleSubmit(1)}
-                  className="block w-full px-4 py-2 text-left hover:bg-orange-300"
-                >
-                  Yes I had
-                </button>
-                <button
-                  onClick={() => handleSubmit(0)}
-                  className="block w-full px-4 py-2 text-left hover:bg-orange-300"
-                >
-                  No I didn't
-                </button>
-              </div>
+                {open && !feedbackLoading && (
+                  <div className="absolute mt-1 w-full sm:w-auto bg-orange-200 border border-orange-500 rounded shadow-lg z-10 overflow-hidden">
+                    <button
+                      onClick={() => handleSubmit(1)}
+                      className="block w-full px-4 py-2 text-left hover:bg-orange-300"
+                    >
+                      Yes I had
+                    </button>
+                    <button
+                      onClick={() => handleSubmit(0)}
+                      className="block w-full px-4 py-2 text-left hover:bg-orange-300"
+                    >
+                      No I didn&apos;t
+                    </button>
+                  </div>
+                )}
+              </>
+            ) : (
+              <span
+                className={`inline-block px-4 py-2 rounded text-sm font-medium ${
+                  statusColors[status] ||
+                  "bg-gray-100 text-gray-700 border border-gray-300"
+                }`}
+              >
+                {status}
+              </span>
             )}
           </div>
         </div>

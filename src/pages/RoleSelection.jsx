@@ -8,6 +8,8 @@ import {
   CardTitle,
 } from "../components/ui/Card";
 import { Users, Shield, DollarSign, IndianRupee } from "lucide-react";
+import { LiaArrowCircleRightSolid } from "react-icons/lia";
+import { TbArrowLeftFromArc } from "react-icons/tb";
 
 const roles = [
   {
@@ -84,13 +86,14 @@ export default function RoleSelection() {
                     {role.description}
                   </CardDescription>
                   <Button
-                    className="w-full font-semibold py-2 px-4 rounded-lg shadow-md mt-auto"
+                    className="w-full font-semibold py-2 px-4 rounded-lg shadow-md mt-auto flex items-center justify-center gap-1"
                     onClick={(e) => {
                       e.stopPropagation();
                       handleRoleSelect(role.type);
                     }}
                   >
-                    Login as {role.title}
+                    <span>Login as {role.title}</span>{" "}
+                    <TbArrowLeftFromArc size={20} />
                   </Button>
                 </CardContent>
               </Card>

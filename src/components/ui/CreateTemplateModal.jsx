@@ -6,7 +6,7 @@ import { setNewTemplate } from "../../slice/menuSlice";
 function CreateTemplateModal({ isOpen, setIsOpen, onSaveTemplate }) {
   const BASE_URL = import.meta.env.VITE_BACKEND_URL;
   const [templateName, setTemplateName] = useState("");
-  const [menuType, setMenuType] = useState("");
+  const [menuType, setMenuType] = useState("Veg");
   const [description, setDescription] = useState("");
   const [menuItems, setMenuItems] = useState("");
 
@@ -111,12 +111,13 @@ function CreateTemplateModal({ isOpen, setIsOpen, onSaveTemplate }) {
               id="menuType"
               className="w-full border rounded px-3 py-2"
               value={menuType}
+              disabled
               onChange={(e) => setMenuType(e.target.value)}
             >
               <option value="">Select type</option>
               <option value="Veg">Vegetarian</option>
-              <option value="Non_Veg">Non-Vegetarian</option>
-              <option value="Both">Both</option>
+              {/* <option value="Non_Veg">Non-Vegetarian</option>
+              <option value="Both">Both</option> */}
             </select>
           </div>
 
