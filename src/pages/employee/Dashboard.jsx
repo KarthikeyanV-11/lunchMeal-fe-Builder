@@ -7,7 +7,16 @@ import {
 } from "../../components/ui/Card";
 import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
-import { Calendar, MapPin, CreditCard, Bell, ChevronDown } from "lucide-react";
+import {
+  Calendar,
+  MapPin,
+  CreditCard,
+  Bell,
+  ChevronDown,
+  Clock,
+  XCircle,
+  UtensilsCrossed,
+} from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
@@ -504,14 +513,47 @@ export default function EmployeeDashboard() {
                 )}
               </>
             ) : (
-              <span
-                className={`inline-block px-4 py-2 rounded text-sm font-medium ${
-                  statusColors[status] ||
-                  "bg-gray-100 text-gray-700 border border-gray-300"
-                }`}
-              >
-                {status}
-              </span>
+              // <span
+              //   className={`inline-flex items-center gap-2 px-4 py-2 rounded text-sm font-medium ${
+              //     statusColors[status] ||
+              //     "bg-gray-100 text-gray-700 border border-gray-300"
+              //   }`}
+              // >
+              <>
+                {status === "YET_TO_TAKE" && (
+                  <div
+                    className={`flex items-center gap-2 px-4 py-2 rounded bg-orange-200 text-orange-800`}
+                  >
+                    <Clock className="w-4 h-4" />
+                    Lunch is coming up.
+                  </div>
+                )}
+                {status === "ABSENT" && (
+                  <div
+                    className={`flex items-center gap-2 px-4 py-2 rounded bg-red-200 text-red-800`}
+                  >
+                    <XCircle className="w-4 h-4" />
+                    You've been marked as absent.
+                  </div>
+                )}
+                {status === "SKIPPED" && (
+                  <div
+                    className={`flex items-center gap-2 px-4 py-2 rounded bg-red-200 text-red-800`}
+                  >
+                    <UtensilsCrossed className="w-4 h-4" />
+                    You missed lunch today.
+                  </div>
+                )}
+                {status === "TAKEN" && (
+                  <div
+                    className={`flex items-center gap-2 px-4 py-2 rounded bg-green-200 text-green-800`}
+                  >
+                    <Smile className="w-4 h-4" />
+                    Hope you liked the lunch! How was it?
+                  </div>
+                )}
+              </>
+              // </span>
             )}
           </div>
         </div>

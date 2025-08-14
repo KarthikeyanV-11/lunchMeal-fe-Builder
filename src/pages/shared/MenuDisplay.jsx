@@ -17,6 +17,8 @@ import {
   DollarSign,
   Calendar,
   Clock,
+  UtensilsCrossed,
+  Smile,
 } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import { useMenu } from "../../contexts/MenuContext";
@@ -203,21 +205,32 @@ export default function MenuDisplay() {
             <ArrowLeft className="h-4 w-4" />
             <span>Back to Calendar </span>
           </Button>
-          <span
-            className={`px-3 py-1 rounded-full text-sm font-medium 
-    ${
-      attendanceStatus === "TAKEN"
-        ? "bg-green-100 text-green-800"
-        : attendanceStatus === "ABSENT"
-          ? "bg-red-100 text-red-800"
-          : attendanceStatus === "SKIPPED"
-            ? "bg-orange-200 text-orange-800"
-            : "bg-gray-100 text-gray-800"
-    }`}
-          >
-            {attendanceStatus}
-          </span>
-
+          <>
+            {attendanceStatus === "YET_TO_TAKE" && (
+              <div className="flex items-center gap-2 px-4 py-2 rounded bg-orange-200 text-orange-800">
+                <Clock className="w-4 h-4" />
+                Lunch is coming up.
+              </div>
+            )}
+            {attendanceStatus === "ABSENT" && (
+              <div className="flex items-center gap-2 px-4 py-2 rounded bg-red-200 text-red-800">
+                <XCircle className="w-4 h-4" />
+                You've been marked as absent.
+              </div>
+            )}
+            {attendanceStatus === "SKIPPED" && (
+              <div className="flex items-center gap-2 px-4 py-2 rounded bg-red-200 text-red-800">
+                <UtensilsCrossed className="w-4 h-4" />
+                You missed lunch today.
+              </div>
+            )}
+            {attendanceStatus === "TAKEN" && (
+              <div className="flex items-center gap-2 px-4 py-2 rounded bg-green-200 text-green-800">
+                <Smile className="w-4 h-4" />
+                Hope you liked the lunch!
+              </div>
+            )}
+          </>
           {/* <Badge variant="outline" className="text-lg px-3 py-1">
             {formattedDate}
           </Badge> */}
