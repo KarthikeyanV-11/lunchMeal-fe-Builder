@@ -238,7 +238,7 @@ const App = () => (
   <TooltipProvider>
     <AuthProvider>
       <MenuProvider>
-        <BrowserRouter>
+        <BrowserRouter basename="/icmeal">
           <AppRoutes />
         </BrowserRouter>
         <Toaster

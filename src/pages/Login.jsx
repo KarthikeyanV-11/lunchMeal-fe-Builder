@@ -118,7 +118,8 @@ export default function Login() {
     <div
       className="relative min-h-screen flex items-center justify-center px-4 bg-cover bg-center bg-no-repeat"
       style={{
-        backgroundImage: "url('/lunch-bg.jpg')",
+        // backgroundImage: "url('/lunch-bg.jpg')",
+        backgroundImage: `url('${import.meta.env.BASE_URL}lunch-bg.jpg')`,
       }}
     >
       {/* Dark overlay to dim the background image */}
