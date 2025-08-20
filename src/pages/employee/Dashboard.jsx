@@ -16,6 +16,7 @@ import {
   Clock,
   XCircle,
   UtensilsCrossed,
+  Smile,
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useRef, useState } from "react";
@@ -212,7 +213,7 @@ export default function EmployeeDashboard() {
           axios.get(`${BASE_URL}/notifications/all`),
           axios.get(`${BASE_URL}/notifications/lastThree`),
           axios.get(
-            `${BASE_URL}/getWorkingDaysDetails?year=${year}&month=${month + 1}`,
+            `${BASE_URL}/common/getWorkingDaysDetails?year=${year}&month=${month + 1}`,
           ),
           axios.get(
             `${BASE_URL}/payroll/monthlyExpensePerEmployee?month=${month + 1}&year=${year}`,

@@ -27,9 +27,13 @@ const navigationConfig = {
     { href: "/admin", label: "Dashboard", icon: Home },
     { href: "/admin/calendar", label: "Calendar", icon: Calendar },
     { href: "/admin/menu-upload", label: "Menu Upload", icon: Upload },
-    { href: "/admin/employees", label: "Employee Mgmt", icon: Users },
+    { href: "/admin/employees", label: "Employee Mgt", icon: Users },
+    {
+      href: "/admin/notifications",
+      label: "Notification Mgt",
+      icon: Bell,
+    },
     { href: "/admin/reports", label: "Reports", icon: BarChart },
-    // { href: "/admin/notifications", label: "Notifications", icon: Bell },
   ],
   payroll: [
     { href: "/payroll", label: "Dashboard", icon: Home },
@@ -40,6 +44,10 @@ const navigationConfig = {
       label: "Reconciliation",
       icon: FileText,
     },
+  ],
+  vendor: [
+    { href: "/vendor", label: "Calendar", icon: Calendar },
+    { href: "/vendor/menu-upload", label: "Menu Upload", icon: Upload },
   ],
 };
 

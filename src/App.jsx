@@ -22,6 +22,9 @@ import store from "./store";
 import { Provider } from "react-redux";
 import MenuUpload from "./pages/admin/menuUpload";
 import EmployeeMgmt from "./pages/admin/EmployeeMgmt";
+import MenuAssignmentCalendar from "./pages/vendor/MenuAssignmentCalendar";
+import VendorMenuUpload from "./pages/vendor/VendorMenuUpload";
+import NotificationManagement from "./pages/admin/NotificationManagement";
 
 // Protected Route Component
 // const ProtectedRoute = ({ children, allowedRoles }) => {
@@ -167,10 +170,11 @@ const AppRoutes = () => (
       path="/admin/notifications"
       element={
         <ProtectedRoute allowedRoles={["admin"]}>
-          <PlaceholderPage
+          {/* <PlaceholderPage
             title="Notification Management"
             description="Create and manage notification templates and alerts."
-          />
+          /> */}
+          <NotificationManagement />
         </ProtectedRoute>
       }
     />
@@ -221,6 +225,29 @@ const AppRoutes = () => (
       element={
         <ProtectedRoute allowedRoles={["employee", "admin", "payroll"]}>
           <MenuDisplay />
+        </ProtectedRoute>
+      }
+    />
+
+    {/* Vendor Routes */}
+    <Route
+      // path="/vendor/calendar"
+      path="/vendor"
+      element={
+        <ProtectedRoute allowedRoles={["vendor"]}>
+          <MenuAssignmentCalendar />
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path="/vendor/menu-upload"
+      element={
+        <ProtectedRoute allowedRoles={["vendor"]}>
+          {/* <PlaceholderPage
+            title="Menu Upload"
+            description="Upload and manage lunch menus for different dates."
+          /> */}
+          <VendorMenuUpload />
         </ProtectedRoute>
       }
     />

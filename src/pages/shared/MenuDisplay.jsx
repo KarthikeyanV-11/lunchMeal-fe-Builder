@@ -28,9 +28,12 @@ import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import { setDailyAttendeesCountStats } from "../../slice/employeeSlice";
 import { GiMeal } from "react-icons/gi";
+import Loader from "../../components/ui/Loader";
+import { FaUndo } from "react-icons/fa";
 
 export default function MenuDisplay() {
   const BASE_URL = import.meta.env.VITE_BACKEND_URL;
+  const [isloading, setIsLoading] = useState(false);
 
   const dispatch = useDispatch();
   const { role, selectedDate } = useParams();
@@ -70,7 +73,7 @@ export default function MenuDisplay() {
 
   useEffect(() => {
     async function loadMenu() {
-      // setLoading(true);
+      setIsLoading(true);
       const fetchedMenu = await fetchMenuForDate(selectedDate);
       console.log(fetchedMenu);
       if (fetchedMenu) {
@@ -83,7 +86,7 @@ export default function MenuDisplay() {
         setMenuItems([]);
         setDayMenu(null);
       }
-      // setLoading(false);
+      setIsLoading(false);
     }
 
     loadMenu();
@@ -119,7 +122,7 @@ export default function MenuDisplay() {
       }
     }
     fetchDailyStatus();
-  }, [selectedDate]);
+  }, [selectedDate, attendanceStatus]);
 
   const handleAttendanceChange = async () => {
     if (!canMarkAttendance) {
@@ -192,6 +195,24 @@ export default function MenuDisplay() {
     );
   }
 
+  const handleRevoke = async () => {
+    try {
+      const subscriptionId = employeeId;
+      const date = selectedDate;
+
+      const url = `${BASE_URL}/userSubscriptionDetails/revokeSkipLunch/${subscriptionId}?date=${date}`;
+
+      await axios.delete(url);
+
+      toast.success("Your skip lunch status has been revoked!");
+
+      setAttendanceStatus(null);
+    } catch (error) {
+      console.error("Error revoking lunch:", error);
+      toast.error("Failed to revoke skip lunch. Please try again.");
+    }
+  };
+
   return (
     <Layout>
       <div className="max-w-4xl mx-auto p-6">
@@ -206,6 +227,7 @@ export default function MenuDisplay() {
             <span>Back to Calendar </span>
           </Button>
           <>
+            {console.log(attendanceStatus)}
             {attendanceStatus === "YET_TO_TAKE" && (
               <div className="flex items-center gap-2 px-4 py-2 rounded bg-orange-200 text-orange-800">
                 <Clock className="w-4 h-4" />
@@ -256,15 +278,33 @@ export default function MenuDisplay() {
           {userRole === "employee" &&
             !isPastDate &&
             menuItems.length > 0 &&
-            canMarkAttendance && (
+            canMarkAttendance &&
+            (attendanceStatus === "REVOCABLE" ? (
+              <div className="relative group inline-block">
+                <Button
+                  onClick={handleRevoke}
+                  className="flex items-center space-x-2 text-yellow-800 transition-colors bg-yellow-300 hover:bg-yellow-500"
+                >
+                  <FaUndo className="h-4 w-4" />
+                  <span>Revoke Lunch Skip</span>
+                </Button>
+
+                {/* Tooltip */}
+                <div className="absolute bottom-full left-1/2 mb-2 hidden w-max -translate-x-1/2 rounded bg-yellow-200 px-3 py-2 text-sm font-bold text-yellow-800 group-hover:block">
+                  You've marked that you're skipping lunch. You can revoke this
+                  within 5 minutes.
+                  <div className="absolute left-1/2 top-full -translate-x-1/2 border-4 border-transparent border-t-orange-200"></div>
+                </div>
+              </div>
+            ) : (
               <Button
                 onClick={handleAttendanceChange}
                 className="flex items-center space-x-2 text-white transition-colors bg-red-400 hover:bg-red-500"
               >
                 <XCircle className="h-4 w-4" />
-                <span>I will skip lunch</span>
+                <span>Skip Lunch</span>
               </Button>
-            )}
+            ))}
         </div>
 
         {/* Menu Card */}
@@ -275,7 +315,7 @@ export default function MenuDisplay() {
 
           {/* <CardContent> */}
           {loading ? (
-            <p>Loading menu...</p>
+            <Loader />
           ) : !dayMenu ? (
             <div className="text-center py-8">
               <p className="text-gray-500 mb-4">

@@ -16,6 +16,22 @@ const employeeSlice = createSlice({
     setEmployees(state, action) {
       state.allEmployees = action.payload;
     },
+    updateEmployees(state, action) {
+      const newEmployees = action.payload; // backend returns only new/updated employees
+
+      // Keep old employees in a map
+      const employeeMap = new Map(
+        state.allEmployees.map((emp) => [emp.id, emp]),
+      );
+
+      // Overwrite/add new ones
+      newEmployees.forEach((emp) => {
+        employeeMap.set(emp.id, emp);
+      });
+
+      // Update state
+      state.allEmployees = Array.from(employeeMap.values());
+    },
     setSubscribedEmployees(state, action) {
       state.subscribedEmployees = action.payload;
     },
@@ -39,6 +55,7 @@ const employeeSlice = createSlice({
 
 export const {
   setEmployees,
+  updateEmployees,
   setSubscribedEmployees,
   clearEmployees,
   setWorkingDaysStats,

@@ -14,7 +14,7 @@ import { useSelector } from "react-redux";
 import Loader from "../../components/ui/Loader";
 import { GiHotMeal } from "react-icons/gi";
 
-export default function AdminWeekViewCalendar() {
+export default function MenuAssignmentCalendar() {
   const BASE_URL = import.meta.env.VITE_BACKEND_URL;
   const [weeks, setWeeks] = useState([]);
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -485,7 +485,7 @@ export default function AdminWeekViewCalendar() {
                                 : "Not assigned"}
                               {isHoliday && (
                                 <span
-                                  className="text-sm text-red-700 font-semibold"
+                                  className="text-sm text-red-500 font-semibold"
                                   style={{ display: "block" }}
                                 >
                                   Holiday

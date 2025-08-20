@@ -83,7 +83,7 @@ export default function Login() {
 
     try {
       const res = await axios.post(
-        `${BASE_URL}/login`,
+        `${BASE_URL}/common/login`,
         { employeeCode, password },
         { headers: { "Content-Type": "application/json" } },
       );

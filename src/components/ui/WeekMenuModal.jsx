@@ -1028,11 +1028,13 @@ const WeekMenuModal = ({
                   ) : (
                     <>
                       <option value="">No menu assigned</option>
-                      {menuTemplates.map((template) => (
-                        <option key={template.id} value={template.id}>
-                          {template.menuName}
-                        </option>
-                      ))}
+                      {menuTemplates
+                        .filter((template) => !template.isDeleted) // only show active ones
+                        .map((template) => (
+                          <option key={template.id} value={template.id}>
+                            {template.menuName}
+                          </option>
+                        ))}
                     </>
                   )}
                 </select>

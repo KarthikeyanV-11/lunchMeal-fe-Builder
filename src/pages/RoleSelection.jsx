@@ -10,6 +10,7 @@ import {
 import { Users, Shield, DollarSign, IndianRupee } from "lucide-react";
 import { LiaArrowCircleRightSolid } from "react-icons/lia";
 import { TbArrowLeftFromArc } from "react-icons/tb";
+import { BsShop } from "react-icons/bs";
 
 const roles = [
   {
@@ -36,6 +37,14 @@ const roles = [
     icon: IndianRupee,
     color: "bg-purple-50 hover:bg-purple-100 border-purple-200",
   },
+  {
+    type: "vendor",
+    title: "Vendor",
+    description:
+      "Schedule menu changes for a specific date and update the current menu.",
+    icon: BsShop,
+    color: "bg-orange-50 hover:bg-orange-100 border-orange-200",
+  },
 ];
 
 export default function RoleSelection() {
@@ -60,7 +69,8 @@ export default function RoleSelection() {
         </div>
 
         {/* Role Selection Cards */}
-        <div className="grid md:grid-cols-3 gap-8">
+        {/* <div className="grid md:grid-cols-3 gap-8"> */}
+        <div className="grid sm:grid-cols-1 md:grid-cols-2 gap-8">
           {roles.map((role) => {
             const Icon = role.icon;
             return (

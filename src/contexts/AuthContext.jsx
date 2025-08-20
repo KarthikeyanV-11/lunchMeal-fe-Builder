@@ -8,7 +8,7 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const savedRole = localStorage.getItem("role");
-    if (["employee", "admin", "payroll"].includes(savedRole)) {
+    if (["employee", "admin", "payroll", "vendor"].includes(savedRole)) {
       setRole(savedRole);
     }
     setLoading(false); // mark as loaded

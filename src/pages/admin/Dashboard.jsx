@@ -35,6 +35,11 @@ import {
   setMonthlyAvgRating,
 } from "../../slice/menuFeedback";
 import Loader from "../../components/ui/Loader";
+import {
+  HiOutlineArrowTrendingDown,
+  HiOutlineArrowTrendingUp,
+} from "react-icons/hi2";
+import { IoStar, IoStarOutline } from "react-icons/io5";
 
 //uses employeeSlice redux.
 //backend api format: [{},{}...{}]
@@ -280,24 +285,84 @@ export default function AdminDashboard() {
   }, [dispatch, month, year]);
 
   //UTILITY FUNCTIONS
+  // function renderStars(rating) {
+  //   const stars = [];
+  //   const fullStars = Math.floor(rating);
+  //   const hasHalfStar = rating % 1 >= 0.25 && rating % 1 < 0.75;
+  //   const totalStars = hasHalfStar ? fullStars + 1 : Math.round(rating);
+
+  //   for (let i = 0; i < 5; i++) {
+  //     if (i < fullStars) {
+  //       stars.push(<Star key={i} size={16} fill="orange" stroke="orange" />);
+  //     } else if (i === fullStars && hasHalfStar) {
+  //       stars.push(
+  //         <StarHalf key={i} size={16} fill="orange" stroke="orange" />,
+  //       );
+  //     } else {
+  //       stars.push(<StarOff key={i} size={16} stroke="orange" />);
+  //     }
+  //   }
+  //   return stars;
+  // }
   function renderStars(rating) {
     const stars = [];
-    const fullStars = Math.floor(rating);
-    const hasHalfStar = rating % 1 >= 0.25 && rating % 1 < 0.75;
-    const totalStars = hasHalfStar ? fullStars + 1 : Math.round(rating);
 
     for (let i = 0; i < 5; i++) {
-      if (i < fullStars) {
+      if (i < rating) {
         stars.push(<Star key={i} size={16} fill="orange" stroke="orange" />);
-      } else if (i === fullStars && hasHalfStar) {
-        stars.push(
-          <StarHalf key={i} size={16} fill="orange" stroke="orange" />,
-        );
       } else {
-        stars.push(<StarOff key={i} size={16} stroke="orange" />);
+        stars.push(<Star key={i} size={16} stroke="orange" />);
       }
     }
+
     return stars;
+  }
+
+  function StarFill({ percentage, size, color }) {
+    // return (
+    //   <div className="relative w-5 h-5">
+    //     {/* Background star (empty) */}
+    //     <Star
+    //       className="absolute top-0 left-0 text-gray-500 h-5 w-5"
+    //       fill="transparent"
+    //     />
+
+    //     {/* Foreground star (filled portion) */}
+    //     <div
+    //       className="absolute top-0 left-0 overflow-hidden"
+    //       style={{ width: `${percentage}%` }}
+    //     >
+    //       <Star className="text-gray-500 h-5 w-5 fill-orange-500" />
+    //     </div>
+    //   </div>
+    // );
+    return (
+      <div
+        style={{
+          position: "relative",
+          display: "inline-block",
+          width: size,
+          height: size,
+        }}
+      >
+        {/* Outline Star (Background) */}
+        <IoStarOutline size={size} color="#6B7280" />
+
+        {/* Filled Star (Clipped by percentage) */}
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: `${percentage}%`,
+            height: "100%",
+            overflow: "hidden",
+          }}
+        >
+          <IoStar size={size} color="#6B7280" />
+        </div>
+      </div>
+    );
   }
 
   function formatToINR(amount) {
@@ -364,7 +429,7 @@ export default function AdminDashboard() {
               <CardTitle className="text-sm font-medium">
                 Total Subscribers
               </CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
+              <Users className="h-4 w-4 text-gray-500" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
@@ -379,11 +444,19 @@ export default function AdminDashboard() {
                       : "text-gray-500"
                 }`}
               >
-                {subscribedEmployees.comparedCount > 0
-                  ? `${subscribedEmployees.comparedCount} newly subscribed`
-                  : subscribedEmployees.comparedCount < 0
-                    ? `${Math.abs(subscribedEmployees.comparedCount)} unsubscribed`
-                    : "No one unsubscribed"}
+                {subscribedEmployees.comparedCount > 0 ? (
+                  <div className="flex items-center justify-center gap-1">
+                    <HiOutlineArrowTrendingUp className="h-4 w-4" />
+                    {subscribedEmployees.comparedCount} newly subscribed
+                  </div>
+                ) : subscribedEmployees.comparedCount < 0 ? (
+                  <div className="flex items-center gap-1">
+                    <HiOutlineArrowTrendingDown className="h-4 w-4" />
+                    {Math.abs(subscribedEmployees.comparedCount)} unsubscribed
+                  </div>
+                ) : (
+                  <>No one unsubscribed</>
+                )}
               </p>
             </CardContent>
           </Card>
@@ -394,7 +467,7 @@ export default function AdminDashboard() {
                 Previous Monthly Cost
               </CardTitle>
               {/* <DollarSign className="h-4 w-4 text-muted-foreground" /> */}
-              <CreditCard className="h-5 w-5" />
+              <CreditCard className="h-5 w-5 text-gray-500" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
@@ -417,17 +490,23 @@ export default function AdminDashboard() {
               <CardTitle className="text-sm font-medium">
                 Subscription Window
               </CardTitle>
-              <ClockFading className="h-4 w-4" />
+              <ClockFading className="h-4 w-4 text-gray-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{showSubscription} days</div>
-              <p className="text-xs text-muted-foreground">
-                {showSubscription > 0
-                  ? "Remaining"
-                  : showSubscription === 0
-                    ? "Closes today"
-                    : "Closed"}
-              </p>
+              {showSubscription > 0 && (
+                <div className="text-2xl font-bold">
+                  {showSubscription} days
+                </div>
+              )}
+              {showSubscription > 0 ? (
+                <p className="text-xs text-muted-foreground">Remaining</p>
+              ) : showSubscription === 0 ? (
+                <p className="text-lg font-semibold text-orange-600">
+                  Closes today
+                </p>
+              ) : (
+                <p className="text-lg font-semibold text-red-600">Closed</p>
+              )}
             </CardContent>
           </Card>
 
@@ -436,7 +515,8 @@ export default function AdminDashboard() {
               <CardTitle className="text-sm font-medium">
                 Previous Month Avg Rating
               </CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+              {/* <TrendingUp className="h-4 w-4 text-muted-foreground" /> */}
+              <StarFill percentage={(monthlyAvgRating.avgRating / 5) * 100} />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
