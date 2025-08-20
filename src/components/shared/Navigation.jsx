@@ -15,6 +15,7 @@ import { Button } from "../ui/Button";
 import { useDispatch } from "react-redux";
 import { clearUser } from "../../slice/authSlice";
 import { toast } from "react-hot-toast";
+import { FaRegCommentDots } from "react-icons/fa6";
 
 const navigationConfig = {
   employee: [
@@ -48,6 +49,7 @@ const navigationConfig = {
   vendor: [
     { href: "/vendor", label: "Calendar", icon: Calendar },
     { href: "/vendor/menu-upload", label: "Menu Upload", icon: Upload },
+    { href: "/vendor/remarks", label: "remarks", icon: FaRegCommentDots },
   ],
 };
 

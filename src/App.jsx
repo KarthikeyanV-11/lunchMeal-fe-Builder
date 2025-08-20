@@ -25,6 +25,7 @@ import EmployeeMgmt from "./pages/admin/EmployeeMgmt";
 import MenuAssignmentCalendar from "./pages/vendor/MenuAssignmentCalendar";
 import VendorMenuUpload from "./pages/vendor/VendorMenuUpload";
 import NotificationManagement from "./pages/admin/NotificationManagement";
+import MealRemarks from "./pages/vendor/MealRemarks";
 
 // Protected Route Component
 // const ProtectedRoute = ({ children, allowedRoles }) => {
@@ -248,6 +249,18 @@ const AppRoutes = () => (
             description="Upload and manage lunch menus for different dates."
           /> */}
           <VendorMenuUpload />
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path="/vendor/remarks"
+      element={
+        <ProtectedRoute allowedRoles={["vendor"]}>
+          {/* <PlaceholderPage
+            title="Menu Upload"
+            description="Upload and manage lunch menus for different dates."
+          /> */}
+          <MealRemarks />
         </ProtectedRoute>
       }
     />
